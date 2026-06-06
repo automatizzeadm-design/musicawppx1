@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const evolutionApi = axios.create({
-  baseURL: import.meta.env.VITE_EVOLUTION_API_URL,
+  baseURL: import.meta.env.VITE_EVOLUTION_API_URL || 'http://localhost:8080',
   headers: {
-    'apikey': import.meta.env.VITE_EVOLUTION_API_KEY,
+    'apikey': import.meta.env.VITE_EVOLUTION_API_KEY || 'replace_with_your_key',
     'Content-Type': 'application/json'
   }
 });

@@ -32,7 +32,7 @@ function Dashboard() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {instances?.map((instance: any) => (
+          {instances && Array.isArray(instances) ? instances.map((instance: any) => (
             <Card key={instance.instanceName}>
               <CardHeader>
                 <CardTitle className="text-lg">{instance.instanceName}</CardTitle>
@@ -41,12 +41,17 @@ function Dashboard() {
                 <p className="text-sm mb-4">Status: <span className={instance.status === 'open' ? 'text-green-500 font-medium' : 'text-red-500'}>{instance.status}</span></p>
                 <Link to="/chats/$instanceName" params={{ instanceName: instance.instanceName }}>
                   <Button className="w-full">
-                    <MessageSquare className="mr-2 h-4 w-4" /> Open Chats
+                    <MessageSquare className="mr-2 h-4 w-4" /> Abrir Conversas
                   </Button>
                 </Link>
               </CardContent>
             </Card>
-          ))}
+          )) : (
+            <div className="col-span-full text-center p-8 bg-muted rounded-lg border border-dashed">
+              <p className="text-muted-foreground mb-4">Nenhuma instância encontrada.</p>
+              <p className="text-xs">Certifique-se de que a Evolution API está rodando e as chaves de API estão configuradas corretamente.</p>
+            </div>
+          )}
         </div>
       )}
     </div>
