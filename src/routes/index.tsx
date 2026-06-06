@@ -210,7 +210,7 @@ function Dashboard() {
         <Card className="border-primary bg-primary/5 max-w-md mx-auto">
           <CardHeader>
             <CardTitle className="text-center">Escaneie o QR Code</CardTitle>
-            <CardDescription className="text-center">Abra o WhatsApp > Aparelhos Conectados > Conectar um Aparelho</CardDescription>
+            <CardDescription className="text-center">Abra o WhatsApp {'>'} Aparelhos Conectados {'>'} Conectar um Aparelho</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center pb-6">
             <div className="bg-white p-4 rounded-lg shadow-inner mb-4">
