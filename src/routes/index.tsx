@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { evolutionService } from "@/lib/api/evolution";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,10 +38,12 @@ function Dashboard() {
                 <CardTitle className="text-lg">{instance.instanceName}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm mb-4">Status: {instance.status}</p>
-                <Button className="w-full">
-                  <MessageSquare className="mr-2 h-4 w-4" /> Open Chats
-                </Button>
+                <p className="text-sm mb-4">Status: <span className={instance.status === 'open' ? 'text-green-500 font-medium' : 'text-red-500'}>{instance.status}</span></p>
+                <Link to="/chats/$instanceName" params={{ instanceName: instance.instanceName }}>
+                  <Button className="w-full">
+                    <MessageSquare className="mr-2 h-4 w-4" /> Open Chats
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ))}
