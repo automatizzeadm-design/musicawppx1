@@ -1,3 +1,4 @@
+import process from "node:process";
 import { createServerFileRoute } from "@tanstack/react-start/server";
 import { handleIncoming } from "@/lib/agent/conversation.server";
 import type { EvolutionMessagePayload } from "@/lib/agent/types";
@@ -127,10 +128,22 @@ export const ServerRoute = createServerFileRoute("/api/webhook/evolution").metho
   },
 
   GET: async () => {
+    // Diagnóstico: mostra SE as variáveis chegaram no servidor (só booleans,
+    // nunca os valores). Serve pra confirmar a config do Lovable sem chutar.
+    const env = {
+      openai: Boolean(process.env.OPENAI_API_KEY),
+      evolution_url: Boolean(process.env.EVOLUTION_API_URL ?? process.env.VITE_EVOLUTION_API_URL),
+      evolution_key: Boolean(process.env.EVOLUTION_API_KEY ?? process.env.VITE_EVOLUTION_API_KEY),
+    };
+    const ready = env.openai && env.evolution_url && env.evolution_key;
     return new Response(
       JSON.stringify({
         ok: true,
-        message: "Sua Musica Personalizada - Webhook Evolution OK. POST aqui com evento MESSAGES_UPSERT.",
+        ready,
+        env,
+        message: ready
+          ? "Tudo certo! Webhook vivo e variaveis configuradas. Pronto pra receber MESSAGES_UPSERT."
+          : "Webhook vivo, mas faltam variaveis no servidor (veja 'env': false = nao chegou).",
       }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
