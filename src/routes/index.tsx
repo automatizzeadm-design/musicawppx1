@@ -14,11 +14,35 @@ export const Route = createFileRoute("/")({
   component: Dashboard,
 });
 
+// Extrai um QR renderável (<img src>) da resposta da Evolution.
+// A Evolution muda o formato entre versões: às vezes vem em `base64`
+// (data URI pronto), às vezes aninhado em `qrcode.base64`, e o campo
+// `code` é o TEXTO cru do QR (não é imagem — não dá pra renderizar).
+function extractQrImage(data: any): string | null {
+  if (!data || typeof data !== "object") return null;
+  const candidate: unknown =
+    data.base64 ?? data.qrcode?.base64 ?? data.qrcode?.code ?? data.code ?? null;
+  if (typeof candidate !== "string" || !candidate) return null;
+  // Já é um data URI de imagem → usa direto
+  if (candidate.startsWith("data:image")) return candidate;
+  // base64 puro de PNG (começa com a assinatura iVBOR) → adiciona prefixo
+  if (candidate.startsWith("iVBOR")) return `data:image/png;base64,${candidate}`;
+  // Qualquer outra coisa (ex: "2@xxxx") é o code cru de pareamento, não imagem
+  return null;
+}
+
+// Código de pareamento (alternativa ao QR: "WhatsApp > Conectar com número")
+function extractPairingCode(data: any): string | null {
+  const pc = data?.pairingCode ?? data?.qrcode?.pairingCode;
+  return typeof pc === "string" && pc ? pc : null;
+}
+
 function Dashboard() {
   const queryClient = useQueryClient();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newInstance, setNewInstance] = useState({ name: "", token: "" });
   const [qrCode, setQrCode] = useState<string | null>(null);
+  const [pairingCode, setPairingCode] = useState<string | null>(null);
 
   const { data: instances, isLoading, refetch } = useQuery({
     queryKey: ["instances"],
@@ -32,7 +56,14 @@ function Dashboard() {
       toast.success("Instância criada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["instances"] });
       setIsCreateModalOpen(false);
-      // Se a API retornar dados de conexão/QR, poderíamos mostrar aqui
+      // A Evolution já costuma devolver o QR na criação (data.qrcode.base64)
+      const qr = extractQrImage(data) ?? extractQrImage(data?.qrcode);
+      const pc = extractPairingCode(data);
+      if (qr) {
+        setQrCode(qr);
+        setPairingCode(pc);
+        toast.info("QR Code gerado! Escaneie no seu WhatsApp.");
+      }
     },
     onError: () => {
       toast.error("Erro ao criar instância. Verifique as configurações.");
@@ -42,12 +73,22 @@ function Dashboard() {
   const connectMutation = useMutation({
     mutationFn: (name: string) => evolutionService.connectInstance(name),
     onSuccess: (data) => {
-      if (data.code) {
-        setQrCode(data.code);
+      const qr = extractQrImage(data);
+      const pc = extractPairingCode(data);
+      if (qr) {
+        setQrCode(qr);
+        setPairingCode(pc);
         toast.info("QR Code gerado! Escaneie no seu WhatsApp.");
+      } else if (pc) {
+        setQrCode(null);
+        setPairingCode(pc);
+        toast.info("Código de pareamento gerado! Use 'Conectar com número'.");
       } else {
-        toast.success("Solicitação de conexão enviada.");
+        toast.success("Solicitação de conexão enviada. Atualize em instantes.");
       }
+    },
+    onError: () => {
+      toast.error("Erro ao gerar QR Code. Verifique a conexão com a Evolution.");
     }
   });
 
@@ -206,17 +247,29 @@ function Dashboard() {
       </section>
 
       {/* QR Code Modal Display */}
-      {qrCode && (
+      {(qrCode || pairingCode) && (
         <Card className="border-primary bg-primary/5 max-w-md mx-auto">
           <CardHeader>
-            <CardTitle className="text-center">Escaneie o QR Code</CardTitle>
+            <CardTitle className="text-center">Conecte seu WhatsApp</CardTitle>
             <CardDescription className="text-center">Abra o WhatsApp {'>'} Aparelhos Conectados {'>'} Conectar um Aparelho</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center pb-6">
-            <div className="bg-white p-4 rounded-lg shadow-inner mb-4">
-              <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64" />
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setQrCode(null)}>Fechar</Button>
+            {qrCode && (
+              <div className="bg-white p-4 rounded-lg shadow-inner mb-4">
+                <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64" />
+              </div>
+            )}
+            {pairingCode && (
+              <div className="text-center mb-4">
+                <p className="text-xs text-muted-foreground mb-1">
+                  Ou use o código de pareamento (Conectar com número):
+                </p>
+                <p className="text-2xl font-mono font-bold tracking-widest bg-muted px-4 py-2 rounded">
+                  {pairingCode}
+                </p>
+              </div>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => { setQrCode(null); setPairingCode(null); }}>Fechar</Button>
           </CardContent>
         </Card>
       )}
