@@ -1,5 +1,5 @@
 import process from "node:process";
-import { createServerFileRoute } from "@tanstack/react-start/server";
+import { createFileRoute } from "@tanstack/react-router";
 import { handleIncoming } from "@/lib/agent/conversation.server";
 import type { EvolutionMessagePayload } from "@/lib/agent/types";
 
@@ -8,9 +8,9 @@ import type { EvolutionMessagePayload } from "@/lib/agent/types";
 //   POST {APP_URL}/api/webhook/evolution
 // Evento: MESSAGES_UPSERT
 //
-// Idempotência: por enquanto não bloqueamos reentregas, mas o handler
-// é tolerante (overwrite de estado). Pra produção, salvar `messageId`
-// num KV e checar antes de processar.
+// IMPORTANTE: usa o formato atual de rota de servidor do TanStack Start
+// (createFileRoute + server.handlers). O formato antigo createServerFileRoute
+// NÃO entra na árvore de rotas e resulta em 404 no app publicado.
 
 interface EvolutionWebhookBody {
   event?: string;
@@ -91,61 +91,62 @@ function extractPayload(body: EvolutionWebhookBody): EvolutionMessagePayload | {
   };
 }
 
-export const ServerRoute = createServerFileRoute("/api/webhook/evolution").methods({
-  POST: async ({ request }) => {
-    let body: EvolutionWebhookBody;
-    try {
-      body = (await request.json()) as EvolutionWebhookBody;
-    } catch {
-      return new Response(JSON.stringify({ ok: false, error: "invalid_json" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+export const Route = createFileRoute("/api/webhook/evolution")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        let body: EvolutionWebhookBody;
+        try {
+          body = (await request.json()) as EvolutionWebhookBody;
+        } catch {
+          return new Response(JSON.stringify({ ok: false, error: "invalid_json" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
 
-    const extracted = extractPayload(body);
-    if ("skip" in extracted) {
-      return new Response(JSON.stringify({ ok: true, skipped: extracted.skip }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+        const extracted = extractPayload(body);
+        if ("skip" in extracted) {
+          return new Response(JSON.stringify({ ok: true, skipped: extracted.skip }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
 
-    // Processa em background pra responder rápido ao Evolution
-    // (Cloudflare: ctx.waitUntil seria ideal, mas como não temos acesso
-    // direto aqui, processamos inline com timeout curto).
-    try {
-      await handleIncoming({ payload: extracted });
-    } catch (e) {
-      console.error("[webhook] handler error:", e instanceof Error ? e.message : e);
-      // Não retorne 500 — Evolution vai retentar e duplicar.
-    }
+        // Processa inline; não retorna 500 pra evitar reentrega/duplicação.
+        try {
+          await handleIncoming({ payload: extracted });
+        } catch (e) {
+          console.error("[webhook] handler error:", e instanceof Error ? e.message : e);
+        }
 
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  },
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      },
 
-  GET: async () => {
-    // Diagnóstico: mostra SE as variáveis chegaram no servidor (só booleans,
-    // nunca os valores). Serve pra confirmar a config do Lovable sem chutar.
-    const env = {
-      openai: Boolean(process.env.OPENAI_API_KEY),
-      evolution_url: Boolean(process.env.EVOLUTION_API_URL ?? process.env.VITE_EVOLUTION_API_URL),
-      evolution_key: Boolean(process.env.EVOLUTION_API_KEY ?? process.env.VITE_EVOLUTION_API_KEY),
-    };
-    const ready = env.openai && env.evolution_url && env.evolution_key;
-    return new Response(
-      JSON.stringify({
-        ok: true,
-        ready,
-        env,
-        message: ready
-          ? "Tudo certo! Webhook vivo e variaveis configuradas. Pronto pra receber MESSAGES_UPSERT."
-          : "Webhook vivo, mas faltam variaveis no servidor (veja 'env': false = nao chegou).",
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
+      GET: async () => {
+        // Diagnóstico: mostra SE as variáveis chegaram no servidor (só booleans,
+        // nunca os valores). Serve pra confirmar a config do Lovable sem chutar.
+        const env = {
+          openai: Boolean(process.env.OPENAI_API_KEY),
+          evolution_url: Boolean(process.env.EVOLUTION_API_URL ?? process.env.VITE_EVOLUTION_API_URL),
+          evolution_key: Boolean(process.env.EVOLUTION_API_KEY ?? process.env.VITE_EVOLUTION_API_KEY),
+        };
+        const ready = env.openai && env.evolution_url && env.evolution_key;
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            ready,
+            env,
+            message: ready
+              ? "Tudo certo! Webhook vivo e variaveis configuradas. Pronto pra receber MESSAGES_UPSERT."
+              : "Webhook vivo, mas faltam variaveis no servidor (veja 'env': false = nao chegou).",
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      },
+    },
   },
 });

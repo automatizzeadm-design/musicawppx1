@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceName'
+import { Route as ApiWebhookEvolutionRouteImport } from './routes/api/webhook/evolution'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const ChatsInstanceNameRoute = ChatsInstanceNameRouteImport.update({
   path: '/chats/$instanceName',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhookEvolutionRoute = ApiWebhookEvolutionRouteImport.update({
+  id: '/api/webhook/evolution',
+  path: '/api/webhook/evolution',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chats/$instanceName'
+  fullPaths: '/' | '/chats/$instanceName' | '/api/webhook/evolution'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chats/$instanceName'
-  id: '__root__' | '/' | '/chats/$instanceName'
+  to: '/' | '/chats/$instanceName' | '/api/webhook/evolution'
+  id: '__root__' | '/' | '/chats/$instanceName' | '/api/webhook/evolution'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatsInstanceNameRoute: typeof ChatsInstanceNameRoute
+  ApiWebhookEvolutionRoute: typeof ApiWebhookEvolutionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatsInstanceNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/webhook/evolution': {
+      id: '/api/webhook/evolution'
+      path: '/api/webhook/evolution'
+      fullPath: '/api/webhook/evolution'
+      preLoaderRoute: typeof ApiWebhookEvolutionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatsInstanceNameRoute: ChatsInstanceNameRoute,
+  ApiWebhookEvolutionRoute: ApiWebhookEvolutionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
