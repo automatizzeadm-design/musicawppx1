@@ -61,6 +61,23 @@ export function isSupabaseConfigured(): boolean {
   return supabaseEnv() !== null;
 }
 
+/** Faz uma leitura real na tabela pra confirmar credenciais + tabela existem. */
+export async function checkDb(): Promise<{ ok: boolean; error?: string }> {
+  const env = supabaseEnv();
+  if (!env) return { ok: false, error: "sem AGENT_DB_URL/AGENT_DB_KEY" };
+  try {
+    const resp = await fetch(`${env.url}/rest/v1/${TABLE}?select=id&limit=1`, {
+      headers: supabaseHeaders(env),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (resp.ok) return { ok: true };
+    const body = (await resp.text().catch(() => "")).slice(0, 140);
+    return { ok: false, error: `${resp.status} ${body}` };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 function supabaseHeaders(env: { key: string }) {
   return {
     "Content-Type": "application/json",

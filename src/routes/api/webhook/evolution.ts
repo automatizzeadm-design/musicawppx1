@@ -1,7 +1,7 @@
 import process from "node:process";
 import { createFileRoute } from "@tanstack/react-router";
 import { handleIncoming } from "@/lib/agent/conversation.server";
-import { isSupabaseConfigured } from "@/lib/agent/state-store.server";
+import { checkDb, isSupabaseConfigured } from "@/lib/agent/state-store.server";
 import type { EvolutionMessagePayload } from "@/lib/agent/types";
 
 // Webhook que a Evolution API chama quando uma mensagem chega.
@@ -141,11 +141,14 @@ export const Route = createFileRoute("/api/webhook/evolution")({
           owner_whatsapp: Boolean(process.env.OWNER_WHATSAPP),
         };
         const ready = env.openai && env.evolution_url && env.evolution_key;
+        const db = env.supabase ? await checkDb() : { ok: false, error: "supabase off" };
         return new Response(
           JSON.stringify({
             ok: true,
             ready,
             env,
+            db_ok: db.ok,
+            db_error: db.ok ? undefined : db.error,
             message: ready
               ? "Tudo certo! Webhook vivo e variaveis configuradas. Pronto pra receber MESSAGES_UPSERT."
               : "Webhook vivo, mas faltam variaveis no servidor (veja 'env': false = nao chegou).",
