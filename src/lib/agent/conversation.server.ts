@@ -32,6 +32,22 @@ function detectChoice(text: string): OptionChoice {
   return null;
 }
 
+// Palavras que NUNCA são nome (saudações, afirmações, fillers). Evita pegar
+// "claro", "oi", "por favor" como nome do cliente.
+const NAME_STOPWORDS = new Set([
+  "oi", "ola", "olá", "oie", "eai", "eaí", "opa", "alo", "alô",
+  "bom", "boa", "dia", "tarde", "noite",
+  "sim", "claro", "pode", "bora", "manda", "vai", "quero", "aceito", "aceita",
+  "ok", "okay", "blz", "beleza", "certo", "isso", "exato", "show",
+  "por", "favor", "obrigado", "obrigada", "valeu", "vlw",
+  "tudo", "bem", "como", "gostaria", "queria", "preciso", "gostei",
+  "quanto", "qual", "quais", "quando", "onde", "oii", "oiii", "test", "teste",
+]);
+
+function isStopword(word: string): boolean {
+  return NAME_STOPWORDS.has(word.trim().toLowerCase());
+}
+
 function looksLikeName(text: string): boolean {
   // Heurística: mensagem curta com palavras capitalizáveis e sem perguntas
   const trimmed = text.trim();
@@ -43,12 +59,13 @@ function looksLikeName(text: string): boolean {
 
 function extractFirstName(text: string): string | undefined {
   const trimmed = text.trim();
-  // "meu nome é Yuri" / "sou Yuri" / "Yuri"
-  const named = trimmed.match(/(?:me\s*chamo|meu\s*nome\s*[ée]|sou|aqui\s*[ée])\s+([A-Za-zÀ-ÿ]+)/i);
-  if (named?.[1]) return named[1];
-  // Fallback: primeira palavra
-  const first = trimmed.split(/\s+/)[0];
-  return first?.length >= 2 ? first.replace(/[.,!?]/g, "") : undefined;
+  // "meu nome é Yuri" / "sou Yuri" / "Yuri" — captura explícita (vence stopword)
+  const named = trimmed.match(/(?:me\s*chamo|meu\s*nome\s*[ée]|sou\s+o?a?|aqui\s*[ée])\s+([A-Za-zÀ-ÿ]+)/i);
+  if (named?.[1] && !isStopword(named[1])) return named[1];
+  // Fallback: primeira palavra — só se NÃO for saudação/afirmação
+  const first = (trimmed.split(/\s+/)[0] ?? "").replace(/[.,!?]/g, "");
+  if (first.length >= 2 && !isStopword(first)) return first;
+  return undefined;
 }
 
 function detectApproval(text: string): boolean {
