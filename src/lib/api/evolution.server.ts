@@ -54,6 +54,41 @@ export async function sendText(opts: SendTextOptions): Promise<boolean> {
   return false;
 }
 
+interface SendMediaOptions {
+  instance: string;
+  number: string;
+  /** URL pública ou base64 do arquivo de mídia */
+  media: string;
+  mediatype: "audio" | "image" | "video" | "document";
+  mimetype?: string;
+  fileName?: string;
+  delay?: number;
+}
+
+/** Envia mídia (áudio/imagem/etc) por URL pública ou base64 via Evolution. */
+export async function sendMedia(opts: SendMediaOptions): Promise<boolean> {
+  const { instance, number, media, mediatype, mimetype, fileName, delay = 0 } = opts;
+  const { url, apiKey } = evolutionEnv();
+  if (!url || !apiKey) {
+    console.error("[evolution] EVOLUTION_API_URL ou EVOLUTION_API_KEY não configurada (sendMedia)");
+    return false;
+  }
+  try {
+    const resp = await fetch(`${url}/message/sendMedia/${encodeURIComponent(instance)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: apiKey },
+      body: JSON.stringify({ number, mediatype, mimetype, media, fileName, delay }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (resp.ok) return true;
+    console.error("[evolution] sendMedia failed:", resp.status, (await resp.text().catch(() => "")).slice(0, 200));
+    return false;
+  } catch (e) {
+    console.error("[evolution] sendMedia error:", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
 interface GetMediaOptions {
   instance: string;
   messageId: string;

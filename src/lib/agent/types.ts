@@ -47,6 +47,8 @@ export interface ConversationState {
   pix_attempts: number;
   /** Pix aprovado? */
   pix_approved: boolean;
+  /** Já enviamos os áudios de exemplo (prova social)? Evita reenvio. */
+  examples_sent: boolean;
   /** Buffer de mensagens recebidas aguardando o debounce (agrupa rajadas). */
   buffer: BufferedMessage[];
   /** Nota de sistema pendente (ex: veredito do Pix) pra incluir na próxima resposta. */

@@ -9,7 +9,7 @@ import {
   trimHistory,
   type StateStore,
 } from "./state-store.server";
-import { getMediaBase64, sendText } from "../api/evolution.server";
+import { getMediaBase64, sendMedia, sendText } from "../api/evolution.server";
 import type {
   ChatMessage,
   ConversationState,
@@ -312,5 +312,25 @@ export async function handleIncoming({ payload, store = inMemoryStateStore }: Ha
     if (i < chunks.length - 1) {
       await new Promise((r) => setTimeout(r, delay + INTER_MESSAGE_PAUSE_MS));
     }
+  }
+
+  // Exemplos em áudio na prova social — enviados uma única vez por conversa,
+  // logo após a mensagem de prova social (que anuncia "escuta alguns exemplos").
+  if (state.stage === "prova_social" && !state.examples_sent && config.exemplos_audio_urls.length > 0) {
+    await sleep(INTER_MESSAGE_PAUSE_MS);
+    for (const audioUrl of config.exemplos_audio_urls) {
+      await sendMedia({
+        instance: payload.instance,
+        number: payload.phone,
+        media: audioUrl,
+        mediatype: "audio",
+        mimetype: "audio/mpeg",
+        fileName: "exemplo.mp3",
+        delay: 800,
+      });
+      await sleep(INTER_MESSAGE_PAUSE_MS);
+    }
+    state.examples_sent = true;
+    await store.set(key, state);
   }
 }

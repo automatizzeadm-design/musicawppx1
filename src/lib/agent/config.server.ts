@@ -23,6 +23,8 @@ export interface AgentConfig {
   max_history: number;
   /** Janela de debounce do buffer de mensagens (ms). 0 = sem buffer. */
   buffer_ms: number;
+  /** URLs públicas dos áudios de exemplo enviados na prova social. */
+  exemplos_audio_urls: string[];
   business: BusinessConfig;
 }
 
@@ -50,6 +52,10 @@ export function getAgentConfig(): AgentConfig {
     vision_model: process.env.VISION_MODEL ?? "gpt-4o-mini",
     max_history: Number(process.env.MAX_HISTORY ?? 30),
     buffer_ms: Number(process.env.BUFFER_MS ?? 8000),
+    exemplos_audio_urls: (process.env.EXEMPLOS_AUDIO_URLS ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
     business,
   };
 }
