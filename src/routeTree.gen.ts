@@ -15,6 +15,7 @@ import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceN
 import { Route as ApiPedidosRouteImport } from './routes/api/pedidos'
 import { Route as ApiWebhookEvolutionRouteImport } from './routes/api/webhook/evolution'
 import { Route as ApiCronFollowupsRouteImport } from './routes/api/cron/followups'
+import { Route as ApiAgentPauseRouteImport } from './routes/api/agent/pause'
 
 const PedidosRoute = PedidosRouteImport.update({
   id: '/pedidos',
@@ -46,12 +47,18 @@ const ApiCronFollowupsRoute = ApiCronFollowupsRouteImport.update({
   path: '/api/cron/followups',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentPauseRoute = ApiAgentPauseRouteImport.update({
+  id: '/api/agent/pause',
+  path: '/api/agent/pause',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/pedidos': typeof PedidosRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/agent/pause': typeof ApiAgentPauseRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/pedidos': typeof PedidosRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/agent/pause': typeof ApiAgentPauseRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/pedidos': typeof PedidosRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/agent/pause': typeof ApiAgentPauseRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/api/pedidos'
     | '/chats/$instanceName'
+    | '/api/agent/pause'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/api/pedidos'
     | '/chats/$instanceName'
+    | '/api/agent/pause'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/api/pedidos'
     | '/chats/$instanceName'
+    | '/api/agent/pause'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   PedidosRoute: typeof PedidosRoute
   ApiPedidosRoute: typeof ApiPedidosRoute
   ChatsInstanceNameRoute: typeof ChatsInstanceNameRoute
+  ApiAgentPauseRoute: typeof ApiAgentPauseRoute
   ApiCronFollowupsRoute: typeof ApiCronFollowupsRoute
   ApiWebhookEvolutionRoute: typeof ApiWebhookEvolutionRoute
 }
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronFollowupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agent/pause': {
+      id: '/api/agent/pause'
+      path: '/api/agent/pause'
+      fullPath: '/api/agent/pause'
+      preLoaderRoute: typeof ApiAgentPauseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   PedidosRoute: PedidosRoute,
   ApiPedidosRoute: ApiPedidosRoute,
   ChatsInstanceNameRoute: ChatsInstanceNameRoute,
+  ApiAgentPauseRoute: ApiAgentPauseRoute,
   ApiCronFollowupsRoute: ApiCronFollowupsRoute,
   ApiWebhookEvolutionRoute: ApiWebhookEvolutionRoute,
 }

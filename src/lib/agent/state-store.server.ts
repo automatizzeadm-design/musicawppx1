@@ -197,6 +197,48 @@ export async function listOrders(): Promise<ConversationState[]> {
   }
 }
 
+/**
+ * Pausa/despausa o bot pra um número. Casa pelo final do número (ignora o
+ * prefixo DDI). Se não houver conversa ainda, cria uma já pausada (pré-bloqueio)
+ * na instância informada. Retorna quantas conversas foram afetadas.
+ */
+export async function setPausedByPhone(
+  phone: string,
+  paused: boolean,
+  defaultInstance: string,
+): Promise<number> {
+  const env = supabaseEnv();
+  if (!env) return 0;
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) return 0;
+  const tail = digits.slice(-11); // DDD + número (BR), ignora DDI
+  try {
+    const resp = await fetch(`${env.url}/rest/v1/${TABLE}?phone=like.*${tail}&select=state`, {
+      headers: supabaseHeaders(env),
+      signal: AbortSignal.timeout(10000),
+    });
+    const rows = resp.ok ? ((await resp.json().catch(() => [])) as { state?: ConversationState }[]) : [];
+    const states = rows.map((r) => r.state).filter((s): s is ConversationState => Boolean(s));
+    if (states.length) {
+      for (const s of states) {
+        s.paused = paused;
+        s.updated_at = new Date().toISOString();
+        await supabaseStateStore.set(stateKey(s.instance, s.phone), s);
+      }
+      return states.length;
+    }
+    // Pré-bloqueio: cria conversa já pausada (garante DDI 55 se vier sem)
+    const full = digits.length <= 11 ? `55${digits}` : digits;
+    const s = newConversationState(defaultInstance, full);
+    s.paused = paused;
+    await supabaseStateStore.set(stateKey(defaultInstance, full), s);
+    return 1;
+  } catch (e) {
+    console.error("[store] setPausedByPhone erro:", e instanceof Error ? e.message : e);
+    return 0;
+  }
+}
+
 /** Marca um pedido como produzido (botão na aba Pedidos). */
 export async function markProduced(key: string): Promise<boolean> {
   const store = getStateStore();
