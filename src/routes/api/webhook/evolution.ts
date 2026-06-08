@@ -1,6 +1,7 @@
 import process from "node:process";
 import { createFileRoute } from "@tanstack/react-router";
 import { handleIncoming } from "@/lib/agent/conversation.server";
+import { isSupabaseConfigured } from "@/lib/agent/state-store.server";
 import type { EvolutionMessagePayload } from "@/lib/agent/types";
 
 // Webhook que a Evolution API chama quando uma mensagem chega.
@@ -133,6 +134,10 @@ export const Route = createFileRoute("/api/webhook/evolution")({
           openai: Boolean(process.env.OPENAI_API_KEY),
           evolution_url: Boolean(process.env.EVOLUTION_API_URL ?? process.env.VITE_EVOLUTION_API_URL),
           evolution_key: Boolean(process.env.EVOLUTION_API_KEY ?? process.env.VITE_EVOLUTION_API_KEY),
+          // Opcionais (follow-ups): se false, o atendimento funciona mas sem follow-up/persistência.
+          supabase: isSupabaseConfigured(),
+          cron_secret: Boolean(process.env.CRON_SECRET),
+          exemplos_audio: Boolean(process.env.EXEMPLOS_AUDIO_URLS),
         };
         const ready = env.openai && env.evolution_url && env.evolution_key;
         return new Response(
