@@ -3,7 +3,7 @@ import { chatComplete, transcribeAudio } from "./openai.server";
 import { validatePixReceipt } from "./pix-validator.server";
 import { buildStateContext, buildSystemPrompt } from "./prompt.server";
 import {
-  inMemoryStateStore,
+  getStateStore,
   newConversationState,
   stateKey,
   trimHistory,
@@ -141,7 +141,7 @@ interface HandleOptions {
   store?: StateStore;
 }
 
-export async function handleIncoming({ payload, store = inMemoryStateStore }: HandleOptions): Promise<void> {
+export async function handleIncoming({ payload, store = getStateStore() }: HandleOptions): Promise<void> {
   const config = getAgentConfig();
   const key = stateKey(payload.instance, payload.phone);
   let state = (await store.get(key)) ?? newConversationState(payload.instance, payload.phone);
@@ -215,6 +215,9 @@ export async function handleIncoming({ payload, store = inMemoryStateStore }: Ha
   // ───────────────────────────────────────────────────────────────────────
   if (!state.buffer) state.buffer = [];
   state.buffer.push({ id: payload.messageId, text: userText });
+  // Cliente respondeu: reinicia o relógio dos follow-ups e zera o contador.
+  state.last_inbound_at = new Date().toISOString();
+  state.followups_sent = 0;
   if (pixValidationMessage) state.pending_note = pixValidationMessage;
   state.updated_at = new Date().toISOString();
   await store.set(key, state);
@@ -333,4 +336,58 @@ export async function handleIncoming({ payload, store = inMemoryStateStore }: Ha
     state.examples_sent = true;
     await store.set(key, state);
   }
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// FOLLOW-UP
+// Disparado pelo cron quando o cliente fica em silêncio (20min / 2h / 6h).
+// Gera uma mensagem contextual com base em onde a conversa parou e termina
+// com pergunta. NÃO mexe em last_inbound_at (os limites são sempre medidos a
+// partir da última resposta do CLIENTE).
+// ───────────────────────────────────────────────────────────────────────
+export async function sendFollowUp(state: ConversationState, store: StateStore): Promise<boolean> {
+  const config = getAgentConfig();
+  const elapsedMin = Math.round((Date.now() - new Date(state.last_inbound_at).getTime()) / 60000);
+  const humanized = elapsedMin >= 60 ? `cerca de ${Math.round(elapsedMin / 60)}h` : `cerca de ${elapsedMin} min`;
+
+  const directive =
+    `\n\n## TAREFA AGORA: FOLLOW-UP\n` +
+    `O cliente parou de responder há ${humanized} (follow-up nº ${state.followups_sent + 1} de 3). ` +
+    `Mande UMA mensagem curta (1, no máximo 2 balões), gentil e humana, retomando de onde a conversa parou ` +
+    `(etapa atual: ${state.stage}) e SEMPRE terminando com uma pergunta que convida a continuar. ` +
+    `Seja leve, nunca insistente nem robótico. NÃO repita o que já disse antes e NÃO finja que o cliente respondeu.`;
+
+  const systemPrompt = buildSystemPrompt(config.business) + buildStateContext(state) + directive;
+
+  let reply: string;
+  try {
+    reply = await chatComplete({
+      apiKey: config.openai_api_key,
+      model: config.openai_model,
+      systemPrompt,
+      messages: state.history,
+      maxTokens: 300,
+      temperature: 0.85,
+    });
+  } catch (e) {
+    console.error("[followup] LLM error:", e instanceof Error ? e.message : e);
+    return false;
+  }
+  if (!reply) return false;
+
+  const chunks = splitReply(reply);
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const delay = computeTypingDelay(chunk);
+    const ok = await sendText({ instance: state.instance, number: state.phone, text: chunk, delay });
+    if (i === 0 && !ok) return false; // nem o primeiro balão foi: aborta sem contabilizar
+    if (i < chunks.length - 1) await sleep(delay + INTER_MESSAGE_PAUSE_MS);
+  }
+
+  state.history.push({ role: "assistant", content: reply });
+  state.followups_sent += 1;
+  trimHistory(state, config.max_history);
+  state.updated_at = new Date().toISOString();
+  await store.set(stateKey(state.instance, state.phone), state);
+  return true;
 }

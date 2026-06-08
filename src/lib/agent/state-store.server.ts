@@ -1,20 +1,26 @@
+import process from "node:process";
 import type { ConversationState } from "./types";
 
-// Armazena estado de conversa por (instance, phone). Implementação atual:
-// in-memory. Funciona em dev e em Cloudflare Worker enquanto a instância
-// estiver viva, mas perde estado a cada cold-start ou deploy.
+// Armazena estado de conversa por (instance, phone).
 //
-// Pra produção, troque por:
-//   - Cloudflare KV / Durable Objects
-//   - Supabase (cria tabela `agent_conversations`)
-//   - Redis
-// Mantenha a interface `StateStore` igual e injete a impl real.
+// Duas implementações:
+//   - inMemoryStateStore: dev / fallback. Perde estado a cada cold-start.
+//   - supabaseStateStore: persistente (Lovable Cloud / Supabase). NECESSÁRIO
+//     pros follow-ups, porque o cron roda numa invocação separada do webhook
+//     e precisa ler "quem não respondeu".
+//
+// getStateStore() escolhe automaticamente: se SUPABASE_URL +
+// SUPABASE_SERVICE_ROLE_KEY estiverem setados, usa Supabase; senão in-memory.
 
 export interface StateStore {
   get(key: string): Promise<ConversationState | null>;
   set(key: string, state: ConversationState): Promise<void>;
   delete(key: string): Promise<void>;
 }
+
+// ───────────────────────────────────────────────────────────────────────
+// IN-MEMORY
+// ───────────────────────────────────────────────────────────────────────
 
 const memory = new Map<string, ConversationState>();
 
@@ -30,11 +36,138 @@ export const inMemoryStateStore: StateStore = {
   },
 };
 
+// ───────────────────────────────────────────────────────────────────────
+// SUPABASE (via REST, sem SDK — evita dependência extra)
+// ───────────────────────────────────────────────────────────────────────
+
+const TABLE = "agent_conversations";
+
+function supabaseEnv(): { url: string; key: string } | null {
+  const url = (process.env.SUPABASE_URL ?? "").replace(/\/+$/, "");
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE ?? "";
+  if (!url || !key) return null;
+  return { url, key };
+}
+
+export function isSupabaseConfigured(): boolean {
+  return supabaseEnv() !== null;
+}
+
+function supabaseHeaders(env: { key: string }) {
+  return {
+    "Content-Type": "application/json",
+    apikey: env.key,
+    Authorization: `Bearer ${env.key}`,
+  };
+}
+
+function rowFromState(key: string, state: ConversationState) {
+  return {
+    id: key,
+    instance: state.instance,
+    phone: state.phone,
+    stage: state.stage,
+    state,
+    last_inbound_at: state.last_inbound_at,
+    followups_sent: state.followups_sent,
+    pix_approved: state.pix_approved,
+    updated_at: state.updated_at,
+  };
+}
+
+export const supabaseStateStore: StateStore = {
+  async get(key) {
+    const env = supabaseEnv();
+    if (!env) return null;
+    try {
+      const resp = await fetch(
+        `${env.url}/rest/v1/${TABLE}?id=eq.${encodeURIComponent(key)}&select=state`,
+        { headers: supabaseHeaders(env), signal: AbortSignal.timeout(10000) },
+      );
+      if (!resp.ok) {
+        console.error("[store] supabase get falhou:", resp.status, await resp.text().catch(() => ""));
+        return null;
+      }
+      const rows = (await resp.json().catch(() => [])) as { state?: ConversationState }[];
+      return rows[0]?.state ?? null;
+    } catch (e) {
+      console.error("[store] supabase get erro:", e instanceof Error ? e.message : e);
+      return null;
+    }
+  },
+  async set(key, state) {
+    const env = supabaseEnv();
+    if (!env) return;
+    try {
+      const resp = await fetch(`${env.url}/rest/v1/${TABLE}?on_conflict=id`, {
+        method: "POST",
+        headers: { ...supabaseHeaders(env), Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify(rowFromState(key, state)),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!resp.ok) {
+        console.error("[store] supabase set falhou:", resp.status, await resp.text().catch(() => ""));
+      }
+    } catch (e) {
+      console.error("[store] supabase set erro:", e instanceof Error ? e.message : e);
+    }
+  },
+  async delete(key) {
+    const env = supabaseEnv();
+    if (!env) return;
+    try {
+      await fetch(`${env.url}/rest/v1/${TABLE}?id=eq.${encodeURIComponent(key)}`, {
+        method: "DELETE",
+        headers: supabaseHeaders(env),
+        signal: AbortSignal.timeout(10000),
+      });
+    } catch (e) {
+      console.error("[store] supabase delete erro:", e instanceof Error ? e.message : e);
+    }
+  },
+};
+
+/**
+ * Conversas ativas candidatas a follow-up: sem Pix aprovado, com menos de 3
+ * follow-ups e fora de etapas terminais. O cron decide quais estão "vencidas"
+ * pelo tempo. Só funciona com Supabase (in-memory não serve pro cron).
+ */
+export async function listFollowUpCandidates(): Promise<ConversationState[]> {
+  const env = supabaseEnv();
+  if (!env) return [];
+  try {
+    const query =
+      `${env.url}/rest/v1/${TABLE}` +
+      `?pix_approved=eq.false&followups_sent=lt.3` +
+      `&stage=not.in.(entrega,concluido,humano)&select=state`;
+    const resp = await fetch(query, { headers: supabaseHeaders(env), signal: AbortSignal.timeout(15000) });
+    if (!resp.ok) {
+      console.error("[store] supabase listFollowUp falhou:", resp.status, await resp.text().catch(() => ""));
+      return [];
+    }
+    const rows = (await resp.json().catch(() => [])) as { state?: ConversationState }[];
+    return rows.map((r) => r.state).filter((s): s is ConversationState => Boolean(s));
+  } catch (e) {
+    console.error("[store] supabase listFollowUp erro:", e instanceof Error ? e.message : e);
+    return [];
+  }
+}
+
+/** Escolhe a store conforme o ambiente (Supabase se configurado, senão memória). */
+export function getStateStore(): StateStore {
+  return isSupabaseConfigured() ? supabaseStateStore : inMemoryStateStore;
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// HELPERS
+// ───────────────────────────────────────────────────────────────────────
+
 export function stateKey(instance: string, phone: string): string {
   return `${instance}::${phone}`;
 }
 
 export function newConversationState(instance: string, phone: string): ConversationState {
+  const now = new Date().toISOString();
   return {
     instance,
     phone,
@@ -46,8 +179,10 @@ export function newConversationState(instance: string, phone: string): Conversat
     pix_attempts: 0,
     pix_approved: false,
     examples_sent: false,
+    last_inbound_at: now,
+    followups_sent: 0,
     buffer: [],
-    updated_at: new Date().toISOString(),
+    updated_at: now,
   };
 }
 

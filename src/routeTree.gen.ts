@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceName'
 import { Route as ApiWebhookEvolutionRouteImport } from './routes/api/webhook/evolution'
+import { Route as ApiCronFollowupsRouteImport } from './routes/api/cron/followups'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,34 +29,56 @@ const ApiWebhookEvolutionRoute = ApiWebhookEvolutionRouteImport.update({
   path: '/api/webhook/evolution',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronFollowupsRoute = ApiCronFollowupsRouteImport.update({
+  id: '/api/cron/followups',
+  path: '/api/cron/followups',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
+  '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chats/$instanceName' | '/api/webhook/evolution'
+  fullPaths:
+    | '/'
+    | '/chats/$instanceName'
+    | '/api/cron/followups'
+    | '/api/webhook/evolution'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chats/$instanceName' | '/api/webhook/evolution'
-  id: '__root__' | '/' | '/chats/$instanceName' | '/api/webhook/evolution'
+  to:
+    | '/'
+    | '/chats/$instanceName'
+    | '/api/cron/followups'
+    | '/api/webhook/evolution'
+  id:
+    | '__root__'
+    | '/'
+    | '/chats/$instanceName'
+    | '/api/cron/followups'
+    | '/api/webhook/evolution'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatsInstanceNameRoute: typeof ChatsInstanceNameRoute
+  ApiCronFollowupsRoute: typeof ApiCronFollowupsRoute
   ApiWebhookEvolutionRoute: typeof ApiWebhookEvolutionRoute
 }
 
@@ -82,12 +105,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhookEvolutionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/followups': {
+      id: '/api/cron/followups'
+      path: '/api/cron/followups'
+      fullPath: '/api/cron/followups'
+      preLoaderRoute: typeof ApiCronFollowupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatsInstanceNameRoute: ChatsInstanceNameRoute,
+  ApiCronFollowupsRoute: ApiCronFollowupsRoute,
   ApiWebhookEvolutionRoute: ApiWebhookEvolutionRoute,
 }
 export const routeTree = rootRouteImport

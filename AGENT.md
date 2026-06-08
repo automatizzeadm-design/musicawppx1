@@ -100,5 +100,8 @@ Se tudo OK → `pix_approved=true` e avança pro estágio `entrega`. Senão, con
 | `MAX_HISTORY` | `30` | Server |
 | `BUFFER_MS` | `8000` | Server (debounce de rajada; 0 desliga) |
 | `EXEMPLOS_AUDIO_URLS` | — | Server (URLs de áudio p/ prova social, vírgula) |
+| `SUPABASE_URL` | — | Server (persistência + follow-ups) |
+| `SUPABASE_SERVICE_ROLE_KEY` | — | Server (persistência + follow-ups) |
+| `CRON_SECRET` | — | Server (protege `/api/cron/followups`) |
 | `VITE_EVOLUTION_API_URL` | — | Client (dashboard) |
 | `VITE_EVOLUTION_API_KEY` | — | Client (dashboard) |
