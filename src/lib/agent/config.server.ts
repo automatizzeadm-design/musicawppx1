@@ -28,6 +28,14 @@ export interface AgentConfig {
   business: BusinessConfig;
 }
 
+// Áudios de exemplo padrão (arquivos commitados em public/exemplos/).
+// Servem como fallback se EXEMPLOS_AUDIO_URLS não estiver setada.
+const DEFAULT_EXEMPLOS_AUDIO = [
+  "https://musicawppx1.lovable.app/exemplos/exemplo1.mp3",
+  "https://musicawppx1.lovable.app/exemplos/exemplo2.mp3",
+  "https://musicawppx1.lovable.app/exemplos/exemplo3.mp3",
+];
+
 function parseValor(s: string | undefined, fallback: number): number {
   if (!s) return fallback;
   const clean = s.replace(/[^\d,.]/g, "").replace(",", ".");
@@ -46,16 +54,19 @@ export function getAgentConfig(): AgentConfig {
     preco_musica_site_valor: parseValor(process.env.PRECO_MUSICA_SITE, 29.9),
   };
 
+  const exemplosEnv = (process.env.EXEMPLOS_AUDIO_URLS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const exemplosAudioUrls = exemplosEnv.length ? exemplosEnv : DEFAULT_EXEMPLOS_AUDIO;
+
   return {
     openai_api_key: process.env.OPENAI_API_KEY ?? "",
     openai_model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
     vision_model: process.env.VISION_MODEL ?? "gpt-4o-mini",
     max_history: Number(process.env.MAX_HISTORY ?? 30),
     buffer_ms: Number(process.env.BUFFER_MS ?? 8000),
-    exemplos_audio_urls: (process.env.EXEMPLOS_AUDIO_URLS ?? "")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean),
+    exemplos_audio_urls: exemplosAudioUrls,
     business,
   };
 }
