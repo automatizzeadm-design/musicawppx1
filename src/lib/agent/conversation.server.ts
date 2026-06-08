@@ -130,6 +130,8 @@ function computeTypingDelay(text: string): number {
 
 const INTER_MESSAGE_PAUSE_MS = 400;
 
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
 // ───────────────────────────────────────────────────────────────────────
 // FLUXO PRINCIPAL
 // ───────────────────────────────────────────────────────────────────────
@@ -202,6 +204,40 @@ export async function handleIncoming({ payload, store = inMemoryStateStore }: Ha
     return;
   }
 
+  // ───────────────────────────────────────────────────────────────────────
+  // BUFFER / DEBOUNCE
+  // O cliente costuma mandar várias mensagens em rajada ("oi", "tudo bem?",
+  // "queria uma música"). Em vez de responder cada uma, guardamos no buffer
+  // e esperamos uma janela curta. Só a ÚLTIMA mensagem da rajada (a que
+  // continua sendo a última depois do sleep) processa e responde — juntando
+  // todos os textos. Padrão serverless: compara o id da última msg, sem timer
+  // persistente. (Ver lição: comparar id/texto, não timestamp.)
+  // ───────────────────────────────────────────────────────────────────────
+  if (!state.buffer) state.buffer = [];
+  state.buffer.push({ id: payload.messageId, text: userText });
+  if (pixValidationMessage) state.pending_note = pixValidationMessage;
+  state.updated_at = new Date().toISOString();
+  await store.set(key, state);
+
+  if (config.buffer_ms > 0) {
+    await sleep(config.buffer_ms);
+    const fresh = await store.get(key);
+    if (!fresh) return;
+    state = fresh;
+    const last = state.buffer?.[state.buffer.length - 1];
+    if (!last || last.id !== payload.messageId) {
+      // Chegou mensagem nova depois da minha — ela vai responder pela rajada toda.
+      return;
+    }
+  }
+
+  // Sou a última da rajada: junto todos os textos e limpo o buffer.
+  const buffered = state.buffer ?? [];
+  userText = buffered.map((m) => m.text).join("\n").trim() || userText;
+  state.buffer = [];
+  const systemNote = state.pending_note;
+  state.pending_note = undefined;
+
   // Atualiza estado a partir da mensagem do cliente (heurísticas)
   if (state.stage === "abertura" && !state.customer_name) {
     const name = extractFirstName(userText);
@@ -231,7 +267,7 @@ export async function handleIncoming({ payload, store = inMemoryStateStore }: Ha
   }
 
   // Adiciona contexto da validação Pix ao prompt se relevante
-  const extraSystemNote = pixValidationMessage ? `\n\n## NOTA DO SISTEMA\n${pixValidationMessage}` : "";
+  const extraSystemNote = systemNote ? `\n\n## NOTA DO SISTEMA\n${systemNote}` : "";
 
   // Monta histórico pra LLM
   const userMessage: ChatMessage = { role: "user", content: userText };

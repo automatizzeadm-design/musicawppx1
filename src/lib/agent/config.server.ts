@@ -21,6 +21,8 @@ export interface AgentConfig {
   vision_model: string;
   /** Define quantas msgs do histórico mantemos por conversa. */
   max_history: number;
+  /** Janela de debounce do buffer de mensagens (ms). 0 = sem buffer. */
+  buffer_ms: number;
   business: BusinessConfig;
 }
 
@@ -47,6 +49,7 @@ export function getAgentConfig(): AgentConfig {
     openai_model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
     vision_model: process.env.VISION_MODEL ?? "gpt-4o-mini",
     max_history: Number(process.env.MAX_HISTORY ?? 30),
+    buffer_ms: Number(process.env.BUFFER_MS ?? 8000),
     business,
   };
 }

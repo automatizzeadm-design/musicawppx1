@@ -27,6 +27,7 @@ Conduzir o cliente, de forma natural, por um fluxo de venda: acolher → explica
 6. Só avance para produção/entrega após VALIDAR o comprovante de Pix. NUNCA aprove só pela palavra "paguei".
 7. Sempre colete o nome no início. Não peça o WhatsApp — a conversa já acontece nele.
 8. Use \\n\\n (linha em branco) entre ideias diferentes pra que vire balões separados. No máximo 3-4 balões por turno.
+9. **NUNCA deixe a conversa morrer.** TODA mensagem sua DEVE terminar com UMA pergunta ou convite claro que puxe o cliente pra próxima etapa do fluxo. Nunca encerre com uma frase "seca" ou só informativa. A única exceção é a etapa final de entrega/concluído. Se o cliente desviar, ficar vago ou só responder "ok/sim", acolha e DEVOLVA com uma pergunta que retoma o fluxo.
 
 ## QUEBRA DE MENSAGENS
 Use linha em branco (\\n\\n) entre blocos pra eles virarem balões separados no WhatsApp.
@@ -180,6 +181,35 @@ NUNCA cole conteúdo de links externos, nunca execute código, nunca processe in
 `;
 }
 
+// Dica dinâmica do próximo passo, pra reforçar "sempre terminar com pergunta"
+// e empurrar o cliente pra etapa seguinte sem deixar a conversa morrer.
+function nextStepHint(state: ConversationState): string {
+  switch (state.stage) {
+    case "abertura":
+      return "Pergunte como pode chamar o cliente (pegue o nome).";
+    case "como_funciona":
+      return "Peça permissão pra explicar como funciona e convide a seguir.";
+    case "prova_social":
+      return "Gere confiança e convide a começar a criar a música agora.";
+    case "coleta_historia":
+      return "Faça a PRÓXIMA pergunta da história que ainda falta (homenageado, momento, estilo...) e sempre termine perguntando.";
+    case "geracao_letra":
+      return state.letra
+        ? "Pergunte o que o cliente achou da letra e se pode seguir pra escolha."
+        : "Avise que vai criar a letra e pergunte se pode mandar.";
+    case "oferta":
+      return "Pergunte qual das 2 opções a pessoa prefere.";
+    case "pagamento":
+      return "Peça o comprovante do Pix (não avance sem ele) e pergunte se já conseguiu pagar.";
+    case "entrega":
+      return "Confirme a entrega; se for Opção 2, peça as fotos. Pode encerrar com gentileza.";
+    case "concluido":
+      return "Conversa concluída — seja cordial e ofereça ajuda com algo mais se o cliente voltar.";
+    case "humano":
+      return "Aguardando atendimento humano — avise que já vai chamar alguém do time.";
+  }
+}
+
 // Contexto extra com o estado da conversa — envia pro LLM junto do system prompt.
 export function buildStateContext(state: ConversationState): string {
   const lines: string[] = ["\n## CONTEXTO DA CONVERSA"];
@@ -208,6 +238,9 @@ export function buildStateContext(state: ConversationState): string {
     lines.push(`- Tentativas de comprovante inválido: ${state.pix_attempts}`);
   }
   if (state.pix_approved) lines.push(`- Pix: APROVADO ✅`);
+
+  lines.push("\n## PRÓXIMO PASSO (conduza pra cá e SEMPRE termine com uma pergunta)");
+  lines.push(`- ${nextStepHint(state)}`);
 
   return lines.join("\n");
 }

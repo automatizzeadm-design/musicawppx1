@@ -45,6 +45,7 @@ export function newConversationState(instance: string, phone: string): Conversat
     choice: null,
     pix_attempts: 0,
     pix_approved: false,
+    buffer: [],
     updated_at: new Date().toISOString(),
   };
 }

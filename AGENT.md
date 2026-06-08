@@ -98,5 +98,6 @@ Se tudo OK → `pix_approved=true` e avança pro estágio `entrega`. Senão, con
 | `CHAVE_PIX` | `andreyurifurtado1@gmail.com` | Server |
 | `DADOS_RECEBEDOR` | `Andre Yuri Furtado` | Server |
 | `MAX_HISTORY` | `30` | Server |
+| `BUFFER_MS` | `8000` | Server (debounce de rajada; 0 desliga) |
 | `VITE_EVOLUTION_API_URL` | — | Client (dashboard) |
 | `VITE_EVOLUTION_API_KEY` | — | Client (dashboard) |

@@ -47,8 +47,19 @@ export interface ConversationState {
   pix_attempts: number;
   /** Pix aprovado? */
   pix_approved: boolean;
+  /** Buffer de mensagens recebidas aguardando o debounce (agrupa rajadas). */
+  buffer: BufferedMessage[];
+  /** Nota de sistema pendente (ex: veredito do Pix) pra incluir na próxima resposta. */
+  pending_note?: string;
   /** Timestamp da última mensagem */
   updated_at: string;
+}
+
+export interface BufferedMessage {
+  /** messageId do provider — usado como token de "última mensagem" no debounce */
+  id: string;
+  /** texto já pré-processado (transcrição/visão aplicadas) */
+  text: string;
 }
 
 export interface ChatMessage {
