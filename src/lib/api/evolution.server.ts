@@ -33,7 +33,7 @@ export async function sendText(opts: SendTextOptions): Promise<boolean> {
   let lastErr: string | undefined;
   for (let attempt = 1; attempt <= SEND_MAX_ATTEMPTS; attempt++) {
     try {
-      const resp = await fetch(`${url}/message/sendText/${instance}`, {
+      const resp = await fetch(`${url}/message/sendText/${encodeURIComponent(instance)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", apikey: apiKey },
         body: JSON.stringify({ number, text, delay }),
@@ -65,7 +65,7 @@ export async function getMediaBase64(opts: GetMediaOptions): Promise<string | nu
   const { url, apiKey } = evolutionEnv();
   if (!url || !apiKey) return null;
   try {
-    const resp = await fetch(`${url}/chat/getBase64FromMediaMessage/${instance}`, {
+    const resp = await fetch(`${url}/chat/getBase64FromMediaMessage/${encodeURIComponent(instance)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: apiKey },
       body: JSON.stringify({ message: { key: { id: messageId } }, convertToMp4: false }),
