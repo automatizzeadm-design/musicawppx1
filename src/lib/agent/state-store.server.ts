@@ -161,6 +161,36 @@ export async function listFollowUpCandidates(): Promise<ConversationState[]> {
   }
 }
 
+/** Pedidos pagos (pix aprovado), mais recentes primeiro. Pra aba Pedidos. */
+export async function listOrders(): Promise<ConversationState[]> {
+  const env = supabaseEnv();
+  if (!env) return [];
+  try {
+    const query = `${env.url}/rest/v1/${TABLE}?pix_approved=eq.true&select=state&order=updated_at.desc`;
+    const resp = await fetch(query, { headers: supabaseHeaders(env), signal: AbortSignal.timeout(15000) });
+    if (!resp.ok) {
+      console.error("[store] supabase listOrders falhou:", resp.status, await resp.text().catch(() => ""));
+      return [];
+    }
+    const rows = (await resp.json().catch(() => [])) as { state?: ConversationState }[];
+    return rows.map((r) => r.state).filter((s): s is ConversationState => Boolean(s));
+  } catch (e) {
+    console.error("[store] supabase listOrders erro:", e instanceof Error ? e.message : e);
+    return [];
+  }
+}
+
+/** Marca um pedido como produzido (botão na aba Pedidos). */
+export async function markProduced(key: string): Promise<boolean> {
+  const store = getStateStore();
+  const state = await store.get(key);
+  if (!state) return false;
+  state.produced = true;
+  state.updated_at = new Date().toISOString();
+  await store.set(key, state);
+  return true;
+}
+
 /** Escolhe a store conforme o ambiente (Supabase se configurado, senão memória). */
 export function getStateStore(): StateStore {
   return isSupabaseConfigured() ? supabaseStateStore : inMemoryStateStore;
@@ -189,6 +219,7 @@ export function newConversationState(instance: string, phone: string): Conversat
     examples_sent: false,
     order_notified: false,
     paused: false,
+    produced: false,
     last_inbound_at: now,
     followups_sent: 0,
     buffer: [],

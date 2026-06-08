@@ -53,6 +53,8 @@ export interface ConversationState {
   order_notified: boolean;
   /** Agente pausado (handoff manual após pedido pago). Para de responder. */
   paused: boolean;
+  /** Pedido já produzido/entregue por você (marcado na aba Pedidos). */
+  produced: boolean;
   /** ISO da última mensagem RECEBIDA do cliente (base pros follow-ups). */
   last_inbound_at: string;
   /** Quantos follow-ups já mandamos desde a última resposta do cliente (0-3). */

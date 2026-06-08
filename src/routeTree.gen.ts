@@ -9,11 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceName'
+import { Route as ApiPedidosRouteImport } from './routes/api/pedidos'
 import { Route as ApiWebhookEvolutionRouteImport } from './routes/api/webhook/evolution'
 import { Route as ApiCronFollowupsRouteImport } from './routes/api/cron/followups'
 
+const PedidosRoute = PedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -22,6 +29,11 @@ const IndexRoute = IndexRouteImport.update({
 const ChatsInstanceNameRoute = ChatsInstanceNameRouteImport.update({
   id: '/chats/$instanceName',
   path: '/chats/$instanceName',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPedidosRoute = ApiPedidosRouteImport.update({
+  id: '/api/pedidos',
+  path: '/api/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebhookEvolutionRoute = ApiWebhookEvolutionRouteImport.update({
@@ -37,12 +49,16 @@ const ApiCronFollowupsRoute = ApiCronFollowupsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/pedidos': typeof PedidosRoute
+  '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/pedidos': typeof PedidosRoute
+  '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
@@ -50,6 +66,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/pedidos': typeof PedidosRoute
+  '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
@@ -58,18 +76,24 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/pedidos'
+    | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/pedidos'
+    | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
   id:
     | '__root__'
     | '/'
+    | '/pedidos'
+    | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
@@ -77,6 +101,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PedidosRoute: typeof PedidosRoute
+  ApiPedidosRoute: typeof ApiPedidosRoute
   ChatsInstanceNameRoute: typeof ChatsInstanceNameRoute
   ApiCronFollowupsRoute: typeof ApiCronFollowupsRoute
   ApiWebhookEvolutionRoute: typeof ApiWebhookEvolutionRoute
@@ -84,6 +110,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pedidos': {
+      id: '/pedidos'
+      path: '/pedidos'
+      fullPath: '/pedidos'
+      preLoaderRoute: typeof PedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -96,6 +129,13 @@ declare module '@tanstack/react-router' {
       path: '/chats/$instanceName'
       fullPath: '/chats/$instanceName'
       preLoaderRoute: typeof ChatsInstanceNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pedidos': {
+      id: '/api/pedidos'
+      path: '/api/pedidos'
+      fullPath: '/api/pedidos'
+      preLoaderRoute: typeof ApiPedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/webhook/evolution': {
@@ -117,6 +157,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PedidosRoute: PedidosRoute,
+  ApiPedidosRoute: ApiPedidosRoute,
   ChatsInstanceNameRoute: ChatsInstanceNameRoute,
   ApiCronFollowupsRoute: ApiCronFollowupsRoute,
   ApiWebhookEvolutionRoute: ApiWebhookEvolutionRoute,
