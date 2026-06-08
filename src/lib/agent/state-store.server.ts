@@ -43,8 +43,16 @@ export const inMemoryStateStore: StateStore = {
 const TABLE = "agent_conversations";
 
 function supabaseEnv(): { url: string; key: string } | null {
-  const url = (process.env.SUPABASE_URL ?? "").replace(/\/+$/, "");
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE ?? "";
+  // O Lovable reserva o prefixo SUPABASE_ pros secrets internos dele, então o
+  // usuário NÃO consegue criar SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY. Usamos
+  // AGENT_DB_* (criáveis) como nomes principais; mantemos os SUPABASE_* só
+  // como fallback caso algum dia o Lovable exponha os internos.
+  const url = (process.env.AGENT_DB_URL ?? process.env.SUPABASE_URL ?? "").replace(/\/+$/, "");
+  const key =
+    process.env.AGENT_DB_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE ??
+    "";
   if (!url || !key) return null;
   return { url, key };
 }
