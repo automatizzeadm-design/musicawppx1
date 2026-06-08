@@ -49,6 +49,10 @@ export interface ConversationState {
   pix_approved: boolean;
   /** Já enviamos os áudios de exemplo (prova social)? Evita reenvio. */
   examples_sent: boolean;
+  /** Pedido já registrado/notificado pro dono (após Pix)? Evita duplicar. */
+  order_notified: boolean;
+  /** Agente pausado (handoff manual após pedido pago). Para de responder. */
+  paused: boolean;
   /** ISO da última mensagem RECEBIDA do cliente (base pros follow-ups). */
   last_inbound_at: string;
   /** Quantos follow-ups já mandamos desde a última resposta do cliente (0-3). */

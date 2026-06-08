@@ -25,6 +25,8 @@ export interface AgentConfig {
   buffer_ms: number;
   /** URLs públicas dos áudios de exemplo enviados na prova social. */
   exemplos_audio_urls: string[];
+  /** WhatsApp do dono (só dígitos, com DDI) que recebe os pedidos pagos. */
+  owner_whatsapp: string;
   business: BusinessConfig;
 }
 
@@ -67,6 +69,7 @@ export function getAgentConfig(): AgentConfig {
     max_history: Number(process.env.MAX_HISTORY ?? 30),
     buffer_ms: Number(process.env.BUFFER_MS ?? 8000),
     exemplos_audio_urls: exemplosAudioUrls,
+    owner_whatsapp: (process.env.OWNER_WHATSAPP ?? "").replace(/\D/g, ""),
     business,
   };
 }

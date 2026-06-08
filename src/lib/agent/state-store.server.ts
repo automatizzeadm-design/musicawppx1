@@ -187,6 +187,8 @@ export function newConversationState(instance: string, phone: string): Conversat
     pix_attempts: 0,
     pix_approved: false,
     examples_sent: false,
+    order_notified: false,
+    paused: false,
     last_inbound_at: now,
     followups_sent: 0,
     buffer: [],

@@ -138,6 +138,7 @@ export const Route = createFileRoute("/api/webhook/evolution")({
           supabase: isSupabaseConfigured(),
           cron_secret: Boolean(process.env.CRON_SECRET),
           exemplos_audio: Boolean(process.env.EXEMPLOS_AUDIO_URLS),
+          owner_whatsapp: Boolean(process.env.OWNER_WHATSAPP),
         };
         const ready = env.openai && env.evolution_url && env.evolution_key;
         return new Response(

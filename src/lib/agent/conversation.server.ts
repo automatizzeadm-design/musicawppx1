@@ -163,6 +163,13 @@ export async function handleIncoming({ payload, store = getStateStore() }: Handl
   const key = stateKey(payload.instance, payload.phone);
   let state = (await store.get(key)) ?? newConversationState(payload.instance, payload.phone);
 
+  // Conversa pausada (handoff manual após pedido pago) — o agente fica em
+  // silêncio pra você assumir. Só volta se `paused` for limpo manualmente.
+  if (state.paused) {
+    console.log("[agent] conversa pausada (handoff), ignorando msg de", payload.phone);
+    return;
+  }
+
   // Pré-processa entrada: pode ser texto, áudio (transcreve), imagem (vision)
   let userText = payload.text?.trim();
   let visionAnnotation: string | undefined;
@@ -353,6 +360,53 @@ export async function handleIncoming({ payload, store = getStateStore() }: Handl
     state.examples_sent = true;
     await store.set(key, state);
   }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // PEDIDO PAGO → registra/notifica o dono e PAUSA o agente (handoff manual).
+  // Dispara assim que o Pix é aprovado, depois da confirmação "em produção"
+  // pro cliente. Roda uma vez (order_notified).
+  // ─────────────────────────────────────────────────────────────────────
+  if (state.pix_approved && !state.order_notified) {
+    if (config.owner_whatsapp) {
+      const resumo = buildOrderSummary(state);
+      await sendText({ instance: payload.instance, number: config.owner_whatsapp, text: resumo, delay: 0 });
+    } else {
+      console.warn("[agent] OWNER_WHATSAPP não configurado — pedido pago NÃO foi notificado");
+    }
+    state.order_notified = true;
+    state.paused = true;
+    await store.set(key, state);
+  }
+}
+
+// Resumo do pedido pago, enviado pro WhatsApp do dono pra produção manual.
+function buildOrderSummary(state: ConversationState): string {
+  const s = state.story;
+  const opcao =
+    state.choice === "musica_site"
+      ? "Opção 2 — Música + site"
+      : state.choice === "musica"
+        ? "Opção 1 — Só música"
+        : "—";
+  const linhas: (string | null)[] = [
+    "🎵 *NOVO PEDIDO PAGO* — Sua Música Personalizada",
+    "",
+    `Cliente: ${state.customer_name ?? "—"}`,
+    `WhatsApp: ${state.phone}`,
+    `Opção: ${opcao}`,
+    "",
+    "— História —",
+    s.homenageado_nome ? `Homenageado(a): ${s.homenageado_nome}` : null,
+    s.onde_se_conheceram ? `Onde se conheceram: ${s.onde_se_conheceram}` : null,
+    s.filhos ? `Filhos: ${s.filhos}` : null,
+    s.momento_marcante ? `Momento marcante: ${s.momento_marcante}` : null,
+    s.estilo ? `Estilo: ${s.estilo}` : null,
+    s.detalhes_extra ? `Detalhes: ${s.detalhes_extra}` : null,
+    "",
+    "— Letra aprovada —",
+    state.letra ?? "(sem letra registrada)",
+  ];
+  return linhas.filter((l): l is string => l !== null).join("\n");
 }
 
 // ───────────────────────────────────────────────────────────────────────
