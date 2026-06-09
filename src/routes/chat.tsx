@@ -8,11 +8,24 @@ export const Route = createFileRoute("/chat")({
 // ── Configuração ────────────────────────────────────────────────────────
 const PRECIO_SOLO = "$9 USD"; // solo la canción
 const PRECIO_VIDEO = "$12 USD"; // canción + video
-const PRECIO_SOLO_ANTES = "$19 USD"; // âncora (preço "de") — ajuste/remova se quiser
-const PRECIO_VIDEO_ANTES = "$24 USD"; // âncora (preço "de")
+const PRECIO_SOLO_ANTES = "$19"; // âncora (preço "de") — ajuste/remova se quiser
+const PRECIO_VIDEO_ANTES = "$24"; // âncora (preço "de")
 const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
 const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
 const AUDIO_EJEMPLOS = ["/exemplos/exemplo1.mp3", "/exemplos/exemplo2.mp3"];
+
+// Preços locais por país (com taxas da Hotmart). O valor de $12 é proporcional
+// ao $9 — ajuste com o preço real do checkout de cada país se quiser.
+const PRICES: Record<string, { solo: string; video: string }> = {
+  MX: { solo: "MX$ 167,00", video: "MX$ 223,00" },
+  CO: { solo: "COP $34.134", video: "COP $45.512" },
+  AR: { solo: "ARS $14.974,00", video: "ARS $19.965,00" },
+  PE: { solo: "S/ 34,00", video: "S/ 45,00" },
+  CL: { solo: "CLP $10.403", video: "CLP $13.871" },
+  ES: { solo: "€ 8,30", video: "€ 11,00" },
+};
+
+const ACENTOS = ["Neutro latinoamericano", "México", "Colombia", "Argentina", "Perú", "Chile", "España"];
 
 const ESTILOS = [
   "Balada romántica",
@@ -49,7 +62,7 @@ interface Msg {
 type Control =
   | { type: "buttons"; buttons: { label: string; onClick: () => void }[] }
   | { type: "text"; placeholder: string; onSubmit: (v: string) => void }
-  | { type: "select"; onSubmit: (v: string) => void }
+  | { type: "select"; options: string[]; onSubmit: (v: string) => void }
   | { type: "email"; onSubmit: (v: string) => void }
   | { type: "link"; label: string; href: string }
   | null;
@@ -60,6 +73,7 @@ function ChatFunnel() {
   const [control, setControl] = useState<Control>(null);
   const [draft, setDraft] = useState("");
   const [progress, setProgress] = useState(6);
+  const [pais, setPais] = useState("");
 
   const idRef = useRef(0);
   const started = useRef(false);
@@ -69,10 +83,11 @@ function ChatFunnel() {
     nombre: string;
     historia: string;
     estilo: string;
+    acento: string;
     letra: string;
     opcion: string;
     checkout: string;
-  }>({ nombre: "", historia: "", estilo: "", letra: "", opcion: "", checkout: "" });
+  }>({ nombre: "", historia: "", estilo: "", acento: "", letra: "", opcion: "", checkout: "" });
 
   const nextId = () => ++idRef.current;
   const pushUser = (text: string) => setMessages((m) => [...m, { id: nextId(), from: "user", text }]);
@@ -164,13 +179,22 @@ function ChatFunnel() {
     setProgress(72);
     setControl(null);
     await botSay(["¡Qué linda historia! 😍 ¿Y qué estilo musical prefieres? 👇"]);
-    setControl({ type: "select", onSubmit: onEstilo });
+    setControl({ type: "select", options: ESTILOS, onSubmit: onEstilo });
   }
 
   async function onEstilo(v: string) {
     data.current.estilo = v;
     pushUser(v);
-    setProgress(82);
+    setProgress(78);
+    setControl(null);
+    await botSay(["¡Buenísimo! ¿Y con qué acento quieres tu canción? 🌎 👇"]);
+    setControl({ type: "select", options: ACENTOS, onSubmit: onAcento });
+  }
+
+  async function onAcento(v: string) {
+    data.current.acento = v;
+    pushUser(v);
+    setProgress(84);
     setControl(null);
     await generarLetra();
   }
@@ -191,6 +215,7 @@ function ChatFunnel() {
           nombre: data.current.nombre,
           historia: data.current.historia,
           estilo: data.current.estilo,
+          acento: data.current.acento,
           ajuste: instruccion ?? "",
           anterior: data.current.letra ?? "",
         }),
@@ -274,10 +299,13 @@ function ChatFunnel() {
 
   async function mostrarOferta() {
     setProgress(97);
+    const loc = PRICES[pais];
+    const soloLocal = loc ? ` (${loc.solo})` : "";
+    const videoLocal = loc ? ` (${loc.video})` : "";
     await botSay([
       "¡Qué bueno que te gustó! 🎉 Ahora elige cómo quieres recibir tu canción 👇",
-      `🎵 Solo la canción · de ${PRECIO_SOLO_ANTES} por solo ${PRECIO_SOLO} (precio de lanzamiento)`,
-      `🎬 Canción + video con fotos ⭐ (la más elegida) · de ${PRECIO_VIDEO_ANTES} por solo ${PRECIO_VIDEO}`,
+      `🎵 Solo la canción · de ${PRECIO_SOLO_ANTES} por solo ${PRECIO_SOLO}${soloLocal}`,
+      `🎬 Canción + video con fotos ⭐ (la más elegida) · de ${PRECIO_VIDEO_ANTES} por solo ${PRECIO_VIDEO}${videoLocal}`,
       "⏳ Precio de lanzamiento por tiempo limitado — luego sube.",
       "🔒 Compra 100% segura · Satisfacción garantizada o te devolvemos tu dinero.",
     ]);
@@ -312,6 +340,15 @@ function ChatFunnel() {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
+    const override = new URLSearchParams(window.location.search).get("pais");
+    if (override) {
+      setPais(override.toUpperCase());
+    } else {
+      fetch("/api/geo")
+        .then((r) => r.json())
+        .then((j: { country?: string }) => setPais((j.country || "").toUpperCase()))
+        .catch(() => {});
+    }
     void apertura();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -439,7 +476,7 @@ function ControlArea({
         <option value="" disabled>
           Selecciona…
         </option>
-        {ESTILOS.map((e) => (
+        {control.options.map((e) => (
           <option key={e} value={e}>
             {e}
           </option>

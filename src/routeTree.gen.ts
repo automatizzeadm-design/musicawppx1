@@ -16,6 +16,7 @@ import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceN
 import { Route as ApiPedidosRouteImport } from './routes/api/pedidos'
 import { Route as ApiLetraRouteImport } from './routes/api/letra'
 import { Route as ApiLeadRouteImport } from './routes/api/lead'
+import { Route as ApiGeoRouteImport } from './routes/api/geo'
 import { Route as ApiWebhookEvolutionRouteImport } from './routes/api/webhook/evolution'
 import { Route as ApiCronFollowupsRouteImport } from './routes/api/cron/followups'
 import { Route as ApiAgentPauseRouteImport } from './routes/api/agent/pause'
@@ -55,6 +56,11 @@ const ApiLeadRoute = ApiLeadRouteImport.update({
   path: '/api/lead',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGeoRoute = ApiGeoRouteImport.update({
+  id: '/api/geo',
+  path: '/api/geo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWebhookEvolutionRoute = ApiWebhookEvolutionRouteImport.update({
   id: '/api/webhook/evolution',
   path: '/api/webhook/evolution',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
+  '/api/geo': typeof ApiGeoRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/pedidos': typeof ApiPedidosRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
+  '/api/geo': typeof ApiGeoRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/pedidos': typeof ApiPedidosRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
+  '/api/geo': typeof ApiGeoRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/pedidos': typeof ApiPedidosRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/pedidos'
+    | '/api/geo'
     | '/api/lead'
     | '/api/letra'
     | '/api/pedidos'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/pedidos'
+    | '/api/geo'
     | '/api/lead'
     | '/api/letra'
     | '/api/pedidos'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/pedidos'
+    | '/api/geo'
     | '/api/lead'
     | '/api/letra'
     | '/api/pedidos'
@@ -151,6 +163,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
   PedidosRoute: typeof PedidosRoute
+  ApiGeoRoute: typeof ApiGeoRoute
   ApiLeadRoute: typeof ApiLeadRoute
   ApiLetraRoute: typeof ApiLetraRoute
   ApiPedidosRoute: typeof ApiPedidosRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLeadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/geo': {
+      id: '/api/geo'
+      path: '/api/geo'
+      fullPath: '/api/geo'
+      preLoaderRoute: typeof ApiGeoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/webhook/evolution': {
       id: '/api/webhook/evolution'
       path: '/api/webhook/evolution'
@@ -239,6 +259,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
   PedidosRoute: PedidosRoute,
+  ApiGeoRoute: ApiGeoRoute,
   ApiLeadRoute: ApiLeadRoute,
   ApiLetraRoute: ApiLetraRoute,
   ApiPedidosRoute: ApiPedidosRoute,
