@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import {
   Power,
   RefreshCw,
   XCircle,
+  MessageSquare,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -108,9 +109,16 @@ function Home() {
             </h1>
             <p className="text-muted-foreground">Painel do agente de WhatsApp</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
-          </Button>
+          <div className="flex gap-2">
+            <Link to="/chat">
+              <Button variant="outline" size="sm">
+                <MessageSquare className="mr-2 h-4 w-4" /> Chats
+              </Button>
+            </Link>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
+            </Button>
+          </div>
         </header>
 
         <Card>
