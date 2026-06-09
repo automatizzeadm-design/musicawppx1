@@ -57,6 +57,7 @@ function ChatFunnel() {
   const [typing, setTyping] = useState(false);
   const [control, setControl] = useState<Control>(null);
   const [draft, setDraft] = useState("");
+  const [progress, setProgress] = useState(6);
 
   const idRef = useRef(0);
   const started = useRef(false);
@@ -102,6 +103,7 @@ function ChatFunnel() {
   async function onNombre(v: string) {
     data.current.nombre = v;
     pushUser(v);
+    setProgress(16);
     setControl(null);
     await botSay([`¡Mucho gusto, ${v}! 😊 ¿Te explico rapidito cómo funciona?`]);
     setControl({ type: "buttons", buttons: [{ label: "Quiero saber cómo funciona", onClick: comoFunciona }] });
@@ -109,6 +111,7 @@ function ChatFunnel() {
 
   async function comoFunciona() {
     pushUser("Quiero saber cómo funciona");
+    setProgress(28);
     setControl(null);
     await botSay([
       "Funciona así de fácil:",
@@ -121,6 +124,7 @@ function ChatFunnel() {
 
   async function pruebaSocial() {
     pushUser("Continuar");
+    setProgress(40);
     setControl(null);
     await botSay([
       "💬 Mira lo que dicen quienes ya regalaron con el Club de la Música:",
@@ -132,6 +136,7 @@ function ChatFunnel() {
 
   async function ejemplos() {
     pushUser("Escuchar ejemplos 🎧");
+    setProgress(52);
     setControl(null);
     await botSay(["🎧 Aquí tienes algunos fragmentos de canciones que ya entregamos:"]);
     setMessages((m) => [...m, { id: nextId(), from: "bot", text: "", kind: "audios" }]);
@@ -142,6 +147,7 @@ function ChatFunnel() {
 
   async function pedirHistoria() {
     pushUser("Personalizar mi canción 🎵");
+    setProgress(60);
     setControl(null);
     await botSay([
       "¡Vamos a crear la tuya! Escríbeme lo que quieres que vaya en la letra, por ejemplo:",
@@ -153,6 +159,7 @@ function ChatFunnel() {
   async function onHistoria(v: string) {
     data.current.historia = v;
     pushUser(v);
+    setProgress(72);
     setControl(null);
     await botSay(["¡Qué linda historia! 😍 ¿Y qué estilo musical prefieres? 👇"]);
     setControl({ type: "select", onSubmit: onEstilo });
@@ -161,6 +168,7 @@ function ChatFunnel() {
   async function onEstilo(v: string) {
     data.current.estilo = v;
     pushUser(v);
+    setProgress(82);
     setControl(null);
     await generarLetra();
   }
@@ -198,6 +206,7 @@ function ChatFunnel() {
 
   async function oferta() {
     pushUser("¡Me encantó! ✅");
+    setProgress(92);
     setControl(null);
     await botSay([
       "¡Qué bueno que te encantó! 💜 Puedes elegir entre 2 opciones:",
@@ -232,6 +241,7 @@ function ChatFunnel() {
 
   async function onEmail(v: string) {
     pushUser(v);
+    setProgress(100);
     setControl(null);
     fetch("/api/lead", {
       method: "POST",
@@ -262,6 +272,12 @@ function ChatFunnel() {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-[100dvh] bg-[#f3efe6]">
+      <div className="h-1.5 w-full bg-black/10">
+        <div
+          className="h-full bg-gradient-to-r from-emerald-600 to-amber-500 transition-all duration-700 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
       <header className="text-center py-3 border-b border-black/5 bg-[#f3efe6]">
         <h1 className="text-lg font-bold text-[#3a2e22]">🎶 Tu Música Personalizada</h1>
       </header>
