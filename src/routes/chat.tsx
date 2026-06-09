@@ -8,6 +8,8 @@ export const Route = createFileRoute("/chat")({
 // ── Configuração ────────────────────────────────────────────────────────
 const PRECIO_SOLO = "$9 USD"; // solo la canción
 const PRECIO_VIDEO = "$12 USD"; // canción + video
+const PRECIO_SOLO_ANTES = "$19 USD"; // âncora (preço "de") — ajuste/remova se quiser
+const PRECIO_VIDEO_ANTES = "$24 USD"; // âncora (preço "de")
 const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
 const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
 const AUDIO_EJEMPLOS = ["/exemplos/exemplo1.mp3", "/exemplos/exemplo2.mp3"];
@@ -202,7 +204,7 @@ function ChatFunnel() {
         setControl({
           type: "buttons",
           buttons: [
-            { label: "¡Me encantó! ✅", onClick: oferta },
+            { label: "¡Me encantó! ✅", onClick: aprobar },
             { label: "Editar la letra ✏️", onClick: pedirAjuste },
             { label: "Crear otra versión 🔄", onClick: otraVersion },
           ],
@@ -239,45 +241,20 @@ function ChatFunnel() {
     );
   }
 
-  async function oferta() {
+  async function aprobar() {
     pushUser("¡Me encantó! ✅");
-    setProgress(92);
+    setProgress(88);
     setControl(null);
     await botSay([
-      "¡Qué bueno que te gustó! 🎉 Ahora podemos avanzar con la producción de tu canción 🎶",
-      "Puedes elegir entre 2 opciones:",
-      `🎵 Opción 1 – Solo la canción · ${PRECIO_SOLO} (pago único)`,
-      `🎬 Opción 2 – Canción + video con fotos ⭐ (la más elegida) · ${PRECIO_VIDEO} (pago único)`,
-      "🔒 Compra 100% segura | Satisfacción garantizada o te devolvemos tu dinero.",
-      "👉 ¿Cuál tiene más sentido para ti?",
+      "¡Me alegra muchísimo que te haya encantado! 🥹",
+      "Déjame tu correo electrónico — es ahí donde recibirás tu canción y todos los detalles de tu pedido 💌",
     ]);
-    setControl({
-      type: "buttons",
-      buttons: [
-        {
-          label: `Opción 1 – ${PRECIO_SOLO}`,
-          onClick: () => pedirEmail("Solo la canción", PRECIO_SOLO, HOTMART_SOLO),
-        },
-        {
-          label: `Opción 2 – ${PRECIO_VIDEO}`,
-          onClick: () => pedirEmail("Canción + video", PRECIO_VIDEO, HOTMART_VIDEO),
-        },
-      ],
-    });
-  }
-
-  async function pedirEmail(opcion: string, precio: string, checkout: string) {
-    data.current.opcion = `${opcion} (${precio})`;
-    data.current.checkout = checkout;
-    pushUser(`${opcion} – ${precio}`);
-    setControl(null);
-    await botSay(["¡Excelente elección! Antes de continuar, ¿cuál es tu correo electrónico? 💌"]);
     setControl({ type: "email", onSubmit: onEmail });
   }
 
   async function onEmail(v: string) {
     pushUser(v);
-    setProgress(100);
+    setProgress(94);
     setControl(null);
     fetch("/api/lead", {
       method: "POST",
@@ -291,11 +268,45 @@ function ChatFunnel() {
         email: v,
       }),
     }).catch(() => {});
+    await botSay([`¡Perfecto, ${data.current.nombre}! Te enviaremos todo a ${v} 📩`]);
+    await mostrarOferta();
+  }
+
+  async function mostrarOferta() {
+    setProgress(97);
     await botSay([
-      `¡Listo, ${data.current.nombre}! 🎉`,
+      "¡Qué bueno que te gustó! 🎉 Ahora elige cómo quieres recibir tu canción 👇",
+      `🎵 Solo la canción · de ${PRECIO_SOLO_ANTES} por solo ${PRECIO_SOLO} (precio de lanzamiento)`,
+      `🎬 Canción + video con fotos ⭐ (la más elegida) · de ${PRECIO_VIDEO_ANTES} por solo ${PRECIO_VIDEO}`,
+      "⏳ Precio de lanzamiento por tiempo limitado — luego sube.",
+      "🔒 Compra 100% segura · Satisfacción garantizada o te devolvemos tu dinero.",
+    ]);
+    setControl({
+      type: "buttons",
+      buttons: [
+        {
+          label: "Quiero solo la canción 🎵",
+          onClick: () => irCheckout("Solo la canción", PRECIO_SOLO, HOTMART_SOLO),
+        },
+        {
+          label: "Quiero canción + video ⭐",
+          onClick: () => irCheckout("Canción + video", PRECIO_VIDEO, HOTMART_VIDEO),
+        },
+      ],
+    });
+  }
+
+  async function irCheckout(opcion: string, precio: string, checkout: string) {
+    data.current.opcion = `${opcion} (${precio})`;
+    data.current.checkout = checkout;
+    pushUser(opcion);
+    setProgress(100);
+    setControl(null);
+    await botSay([
+      "¡Excelente elección! 🎉",
       "Toca el botón de abajo para completar tu pago de forma 100% segura y empezamos a producir tu canción de inmediato 🎶",
     ]);
-    setControl({ type: "link", label: "Completar mi pedido ✅", href: data.current.checkout });
+    setControl({ type: "link", label: "Completar mi pago ✅", href: checkout });
   }
 
   useEffect(() => {
