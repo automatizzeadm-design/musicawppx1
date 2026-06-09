@@ -5,9 +5,11 @@ export const Route = createFileRoute("/chat")({
   component: ChatFunnel,
 });
 
-// ── Configuração (ajuste preços/áudios aqui) ────────────────────────────
-const PRECIO_1 = "$9 USD"; // Opción 1 — hoy
-const PRECIO_2 = "$7 USD"; // Opción 2 — en hasta 3 días
+// ── Configuração ────────────────────────────────────────────────────────
+const PRECIO_SOLO = "$9 USD"; // solo la canción
+const PRECIO_VIDEO = "$12 USD"; // canción + video
+const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
+const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
 const AUDIO_EJEMPLOS = ["/exemplos/exemplo1.mp3", "/exemplos/exemplo2.mp3"];
 
 const ESTILOS = [
@@ -47,6 +49,7 @@ type Control =
   | { type: "text"; placeholder: string; onSubmit: (v: string) => void }
   | { type: "select"; onSubmit: (v: string) => void }
   | { type: "email"; onSubmit: (v: string) => void }
+  | { type: "link"; label: string; href: string }
   | null;
 
 function ChatFunnel() {
@@ -59,14 +62,14 @@ function ChatFunnel() {
   const started = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // dados coletados
-  const data = useRef<{ nombre: string; historia: string; estilo: string; letra: string; opcion: string }>({
-    nombre: "",
-    historia: "",
-    estilo: "",
-    letra: "",
-    opcion: "",
-  });
+  const data = useRef<{
+    nombre: string;
+    historia: string;
+    estilo: string;
+    letra: string;
+    opcion: string;
+    checkout: string;
+  }>({ nombre: "", historia: "", estilo: "", letra: "", opcion: "", checkout: "" });
 
   const nextId = () => ++idRef.current;
   const pushUser = (text: string) => setMessages((m) => [...m, { id: nextId(), from: "user", text }]);
@@ -85,13 +88,13 @@ function ChatFunnel() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, typing, control]);
 
-  // ── Fluxo ──────────────────────────────────────────────────────────────
+  // ── Flujo ────────────────────────────────────────────────────────────────
   async function apertura() {
     await botSay([
-      "🎧 ¿Ya imaginaste emocionar a alguien con una canción hecha exclusivamente para esa persona?",
-      "Una canción creada desde cero, contando la historia de ustedes.",
-      "Aquí en Tu Música Personalizada transformamos sentimientos en música.",
-      "¿Cómo te llamas?",
+      "🎧 ¿Ya te imaginaste emocionar a esa persona especial con una canción hecha solo para ella?",
+      "Una canción creada desde cero, que cuenta la historia de ustedes dos.",
+      "Aquí en Tu Música Personalizada convertimos sentimientos en música.",
+      "Pero antes de empezar… ¿cómo te llamas?",
     ]);
     setControl({ type: "text", placeholder: "Tu nombre", onSubmit: onNombre });
   }
@@ -100,7 +103,7 @@ function ChatFunnel() {
     data.current.nombre = v;
     pushUser(v);
     setControl(null);
-    await botSay([`${v}, ¿te explico rapidito cómo funciona?`]);
+    await botSay([`¡Mucho gusto, ${v}! 😊 ¿Te explico rapidito cómo funciona?`]);
     setControl({ type: "buttons", buttons: [{ label: "Quiero saber cómo funciona", onClick: comoFunciona }] });
   }
 
@@ -108,10 +111,10 @@ function ChatFunnel() {
     pushUser("Quiero saber cómo funciona");
     setControl(null);
     await botSay([
-      "Funciona así:",
-      "Cada canción es única y exclusiva — no reutilizamos melodías ni letras.",
-      "Tú nos pasas lo que quieres en la letra, eliges el estilo musical y nosotros creamos el resto.",
-      "👉 Y además eliges si quieres solo la canción o canción + video.",
+      "Funciona así de fácil:",
+      "Cada canción es única y exclusiva — nunca repetimos melodías ni letras.",
+      "Tú nos cuentas lo que quieres en la letra, eliges el estilo musical y nosotros nos encargamos de todo lo demás.",
+      "👉 Y además, tú decides si quieres solo la canción o la canción + video.",
     ]);
     setControl({ type: "buttons", buttons: [{ label: "Continuar", onClick: pruebaSocial }] });
   }
@@ -121,7 +124,7 @@ function ChatFunnel() {
     setControl(null);
     await botSay([
       "💬 Mira lo que dicen quienes ya regalaron con el Club de la Música:",
-      "Ya son cientos de canciones entregadas: cumpleaños, bodas, pedidos de perdón, declaraciones y reconciliaciones.",
+      "Ya son cientos de canciones entregadas: cumpleaños, bodas, pedidos de perdón, declaraciones de amor y reconciliaciones.",
       "👉 ¿Quieres escuchar algunos ejemplos reales?",
     ]);
     setControl({ type: "buttons", buttons: [{ label: "Escuchar ejemplos 🎧", onClick: ejemplos }] });
@@ -130,10 +133,10 @@ function ChatFunnel() {
   async function ejemplos() {
     pushUser("Escuchar ejemplos 🎧");
     setControl(null);
-    await botSay(["🎧 Aquí tienes algunos fragmentos de canciones ya entregadas:"]);
+    await botSay(["🎧 Aquí tienes algunos fragmentos de canciones que ya entregamos:"]);
     setMessages((m) => [...m, { id: nextId(), from: "bot", text: "", kind: "audios" }]);
     await sleep(300);
-    await botSay(["Cada una nació de una historia diferente. La tuya será 100% exclusiva."]);
+    await botSay(["Cada una nació de una historia distinta. La tuya va a ser 100% exclusiva."]);
     setControl({ type: "buttons", buttons: [{ label: "Personalizar mi canción 🎵", onClick: pedirHistoria }] });
   }
 
@@ -141,17 +144,17 @@ function ChatFunnel() {
     pushUser("Personalizar mi canción 🎵");
     setControl(null);
     await botSay([
-      "Escribe lo que quieres incluir en la letra, por ejemplo:",
-      "Nombre de la persona, cuánto tiempo llevan juntos, una historia que marcó su vida… 👇",
+      "¡Vamos a crear la tuya! Escríbeme lo que quieres que vaya en la letra, por ejemplo:",
+      "El nombre de la persona, cuánto tiempo llevan juntos, una historia que marcó sus vidas… 👇",
     ]);
-    setControl({ type: "text", placeholder: "Cuéntame la historia…", onSubmit: onHistoria });
+    setControl({ type: "text", placeholder: "Cuéntame su historia…", onSubmit: onHistoria });
   }
 
   async function onHistoria(v: string) {
     data.current.historia = v;
     pushUser(v);
     setControl(null);
-    await botSay(["¿Qué estilo musical prefieres? 👇"]);
+    await botSay(["¡Qué linda historia! 😍 ¿Y qué estilo musical prefieres? 👇"]);
     setControl({ type: "select", onSubmit: onEstilo });
   }
 
@@ -163,7 +166,7 @@ function ChatFunnel() {
   }
 
   async function generarLetra() {
-    await botSay(["🎵 ¡Perfecto! Ahora voy a crear la letra de tu canción… puede tardar unos segundos ✨"]);
+    await botSay(["🎵 ¡Perfecto! Ahora voy a crear la letra de tu canción… dame unos segundos ✨"]);
     setTyping(true);
     try {
       const resp = await fetch("/api/letra", {
@@ -180,15 +183,15 @@ function ChatFunnel() {
       if (j.ok && j.letra) {
         data.current.letra = j.letra;
         setMessages((m) => [...m, { id: nextId(), from: "bot", text: j.letra!, kind: "letra" }]);
-        await botSay(["Aquí está la letra de tu canción. ¿Qué te pareció? 😊"]);
+        await botSay(["¡Aquí está la letra de tu canción! ¿Qué te pareció? 😊"]);
         setControl({ type: "buttons", buttons: [{ label: "¡Me encantó! ✅", onClick: oferta }] });
       } else {
-        await botSay(["Ups, tuve un problemita al crear la letra. ¿Probamos de nuevo?"]);
+        await botSay(["Uy, tuve un problemita al crear la letra. ¿Lo intentamos de nuevo?"]);
         setControl({ type: "buttons", buttons: [{ label: "Intentar de nuevo", onClick: generarLetra }] });
       }
     } catch {
       setTyping(false);
-      await botSay(["Ups, tuve un problemita de conexión. ¿Probamos de nuevo?"]);
+      await botSay(["Uy, tuve un problemita de conexión. ¿Lo intentamos de nuevo?"]);
       setControl({ type: "buttons", buttons: [{ label: "Intentar de nuevo", onClick: generarLetra }] });
     }
   }
@@ -197,26 +200,33 @@ function ChatFunnel() {
     pushUser("¡Me encantó! ✅");
     setControl(null);
     await botSay([
-      "Puedes elegir entre 2 opciones:",
-      `🎵 Opción 1 – Recibe tu canción hoy · ${PRECIO_1} (pago único)`,
-      `🎵 Opción 2 – Recibe tu canción en hasta 3 días · ${PRECIO_2} (pago único)`,
-      "🔒 Compra 100% segura | Satisfacción garantizada o te devolvemos tu dinero",
-      "👉 ¿Cuál opción tiene más sentido para ti?",
+      "¡Qué bueno que te encantó! 💜 Puedes elegir entre 2 opciones:",
+      `🎵 Opción 1 – Solo la canción · ${PRECIO_SOLO} (pago único)`,
+      `🎬 Opción 2 – Canción + video con fotos ⭐ (la más elegida) · ${PRECIO_VIDEO} (pago único)`,
+      "🔒 Compra 100% segura | Satisfacción garantizada o te devolvemos tu dinero.",
+      "👉 ¿Cuál tiene más sentido para ti?",
     ]);
     setControl({
       type: "buttons",
       buttons: [
-        { label: `Opción 1 – ${PRECIO_1}`, onClick: () => pedirEmail("Opción 1 (hoy)") },
-        { label: `Opción 2 – ${PRECIO_2}`, onClick: () => pedirEmail("Opción 2 (3 días)") },
+        {
+          label: `Opción 1 – ${PRECIO_SOLO}`,
+          onClick: () => pedirEmail("Solo la canción", PRECIO_SOLO, HOTMART_SOLO),
+        },
+        {
+          label: `Opción 2 – ${PRECIO_VIDEO}`,
+          onClick: () => pedirEmail("Canción + video", PRECIO_VIDEO, HOTMART_VIDEO),
+        },
       ],
     });
   }
 
-  async function pedirEmail(opcion: string) {
-    data.current.opcion = opcion;
-    pushUser(opcion);
+  async function pedirEmail(opcion: string, precio: string, checkout: string) {
+    data.current.opcion = `${opcion} (${precio})`;
+    data.current.checkout = checkout;
+    pushUser(`${opcion} – ${precio}`);
     setControl(null);
-    await botSay(["¿Cuál es tu correo electrónico? Ahí te enviaremos tu canción y los siguientes pasos 💌"]);
+    await botSay(["¡Excelente elección! Antes de continuar, ¿cuál es tu correo electrónico? 💌"]);
     setControl({ type: "email", onSubmit: onEmail });
   }
 
@@ -226,12 +236,20 @@ function ChatFunnel() {
     fetch("/api/lead", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data.current, email: v }),
+      body: JSON.stringify({
+        nombre: data.current.nombre,
+        historia: data.current.historia,
+        estilo: data.current.estilo,
+        letra: data.current.letra,
+        opcion: data.current.opcion,
+        email: v,
+      }),
     }).catch(() => {});
     await botSay([
-      "¡Listo! 🎉 Revisa tu correo en los próximos minutos.",
-      "En breve recibirás tu canción y el enlace para completar tu pedido. ¡Gracias por confiar en nosotros! 💜",
+      `¡Listo, ${data.current.nombre}! 🎉`,
+      "Toca el botón de abajo para completar tu pago de forma 100% segura y empezamos a producir tu canción de inmediato 🎶",
     ]);
+    setControl({ type: "link", label: "Completar mi pedido ✅", href: data.current.checkout });
   }
 
   useEffect(() => {
@@ -314,6 +332,17 @@ function ControlArea({
 }) {
   if (!control) {
     return <div className="text-center text-xs text-[#a89a82] py-2">…</div>;
+  }
+
+  if (control.type === "link") {
+    return (
+      <a
+        href={control.href}
+        className="block w-full text-center bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl py-3 font-semibold text-sm transition-colors"
+      >
+        {control.label}
+      </a>
+    );
   }
 
   if (control.type === "buttons") {
