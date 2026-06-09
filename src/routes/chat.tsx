@@ -12,7 +12,7 @@ const PRECIO_SOLO_ANTES = "$19"; // âncora (preço "de") — ajuste/remova se q
 const PRECIO_VIDEO_ANTES = "$24"; // âncora (preço "de")
 const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
 const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
-const AUDIO_EJEMPLOS = ["/exemplos/exemplo1.mp3", "/exemplos/exemplo2.mp3"];
+const AUDIO_EJEMPLOS = ["/exemplos/es1.mp3", "/exemplos/es2.mp3", "/exemplos/es3.mp3"];
 
 // Preços locais por país (valores reais do checkout da Hotmart: $9 / $12).
 const PRICES: Record<string, { solo: string; video: string }> = {
@@ -51,11 +51,19 @@ const ESTILOS = [
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
+interface OfferItem {
+  titulo: string;
+  antes: string;
+  ahora: string;
+  local?: string;
+}
+
 interface Msg {
   id: number;
   from: "bot" | "user";
   text: string;
-  kind?: "text" | "letra" | "audios";
+  kind?: "text" | "letra" | "audios" | "oferta";
+  offer?: OfferItem[];
 }
 
 type Control =
@@ -299,12 +307,27 @@ function ChatFunnel() {
   async function mostrarOferta() {
     setProgress(97);
     const loc = PRICES[pais];
-    const soloLocal = loc ? ` (${loc.solo})` : "";
-    const videoLocal = loc ? ` (${loc.video})` : "";
+    await botSay(["¡Qué bueno que te gustó! 🎉 Ahora elige cómo quieres recibir tu canción 👇"]);
+    setMessages((m) => [
+      ...m,
+      {
+        id: nextId(),
+        from: "bot",
+        text: "",
+        kind: "oferta",
+        offer: [
+          { titulo: "🎵 Solo la canción", antes: PRECIO_SOLO_ANTES, ahora: PRECIO_SOLO, local: loc?.solo },
+          {
+            titulo: "🎬 Canción + video con fotos ⭐ (la más elegida)",
+            antes: PRECIO_VIDEO_ANTES,
+            ahora: PRECIO_VIDEO,
+            local: loc?.video,
+          },
+        ],
+      },
+    ]);
+    await sleep(400);
     await botSay([
-      "¡Qué bueno que te gustó! 🎉 Ahora elige cómo quieres recibir tu canción 👇",
-      `🎵 Solo la canción · de ${PRECIO_SOLO_ANTES} por solo ${PRECIO_SOLO}${soloLocal}`,
-      `🎬 Canción + video con fotos ⭐ (la más elegida) · de ${PRECIO_VIDEO_ANTES} por solo ${PRECIO_VIDEO}${videoLocal}`,
       "⏳ Precio de lanzamiento por tiempo limitado — luego sube.",
       "🔒 Compra 100% segura · Satisfacción garantizada o te devolvemos tu dinero.",
     ]);
@@ -385,6 +408,19 @@ function ChatFunnel() {
                     <audio controls preload="none" className="w-full h-9">
                       <source src={src} type="audio/mpeg" />
                     </audio>
+                  </div>
+                ))}
+              </div>
+            ) : m.kind === "oferta" ? (
+              <div key={m.id} className="space-y-2">
+                {m.offer?.map((o, i) => (
+                  <div key={i} className="bg-white border border-pink-100 rounded-xl px-4 py-3 shadow-sm">
+                    <p className="text-sm font-semibold text-gray-800 mb-1">{o.titulo}</p>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-red-500 line-through text-base font-semibold">{o.antes}</span>
+                      <span className="text-green-600 font-extrabold text-2xl">{o.ahora}</span>
+                      {o.local && <span className="text-gray-500 text-sm">({o.local})</span>}
+                    </div>
                   </div>
                 ))}
               </div>
