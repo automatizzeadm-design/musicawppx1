@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PedidosRouteImport } from './routes/pedidos'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceName'
 import { Route as ApiPedidosRouteImport } from './routes/api/pedidos'
@@ -20,6 +21,11 @@ import { Route as ApiAgentPauseRouteImport } from './routes/api/agent/pause'
 const PedidosRoute = PedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -55,6 +61,7 @@ const ApiAgentPauseRoute = ApiAgentPauseRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/chat'
     | '/pedidos'
     | '/api/pedidos'
     | '/chats/$instanceName'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/chat'
     | '/pedidos'
     | '/api/pedidos'
     | '/chats/$instanceName'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/chat'
     | '/pedidos'
     | '/api/pedidos'
     | '/chats/$instanceName'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChatRoute: typeof ChatRoute
   PedidosRoute: typeof PedidosRoute
   ApiPedidosRoute: typeof ApiPedidosRoute
   ChatsInstanceNameRoute: typeof ChatsInstanceNameRoute
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/pedidos'
       fullPath: '/pedidos'
       preLoaderRoute: typeof PedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChatRoute: ChatRoute,
   PedidosRoute: PedidosRoute,
   ApiPedidosRoute: ApiPedidosRoute,
   ChatsInstanceNameRoute: ChatsInstanceNameRoute,

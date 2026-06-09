@@ -108,9 +108,16 @@ function Home() {
             </h1>
             <p className="text-muted-foreground">Painel do agente de WhatsApp</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
-          </Button>
+          <div className="flex gap-2">
+            <Link to="/chat">
+              <Button variant="outline" size="sm">
+                <MessageSquare className="mr-2 h-4 w-4" /> Chats
+              </Button>
+            </Link>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
+            </Button>
+          </div>
         </header>
 
         <Card>
