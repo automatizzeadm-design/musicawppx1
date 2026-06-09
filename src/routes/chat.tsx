@@ -14,15 +14,14 @@ const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
 const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
 const AUDIO_EJEMPLOS = ["/exemplos/exemplo1.mp3", "/exemplos/exemplo2.mp3"];
 
-// Preços locais por país (com taxas da Hotmart). O valor de $12 é proporcional
-// ao $9 — ajuste com o preço real do checkout de cada país se quiser.
+// Preços locais por país (valores reais do checkout da Hotmart: $9 / $12).
 const PRICES: Record<string, { solo: string; video: string }> = {
-  MX: { solo: "MX$ 167,00", video: "MX$ 223,00" },
-  CO: { solo: "COP $34.134", video: "COP $45.512" },
-  AR: { solo: "ARS $14.974,00", video: "ARS $19.965,00" },
-  PE: { solo: "S/ 34,00", video: "S/ 45,00" },
-  CL: { solo: "CLP $10.403", video: "CLP $13.871" },
-  ES: { solo: "€ 8,30", video: "€ 11,00" },
+  MX: { solo: "MX$ 167,00", video: "MX$ 257,52" },
+  CO: { solo: "COP $34.134", video: "COP $45.510" },
+  AR: { solo: "ARS $14.974,00", video: "ARS $19.967,00" },
+  PE: { solo: "S/ 34,00", video: "S/ 44,00" },
+  CL: { solo: "CLP $10.403", video: "CLP $13.872" },
+  ES: { solo: "€ 9,36", video: "€ 12,48" },
 };
 
 const ACENTOS = ["Neutro latinoamericano", "México", "Colombia", "Argentina", "Perú", "Chile", "España"];
