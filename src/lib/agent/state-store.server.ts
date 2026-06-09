@@ -178,6 +178,25 @@ export async function listFollowUpCandidates(): Promise<ConversationState[]> {
   }
 }
 
+/** Salva um lead do funnel web (/chat) na tabela `leads`. */
+export async function saveLead(lead: Record<string, unknown>): Promise<boolean> {
+  const env = supabaseEnv();
+  if (!env) return false;
+  try {
+    const resp = await fetch(`${env.url}/rest/v1/leads`, {
+      method: "POST",
+      headers: { ...supabaseHeaders(env), Prefer: "return=minimal" },
+      body: JSON.stringify(lead),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!resp.ok) console.error("[lead] save falhou:", resp.status, await resp.text().catch(() => ""));
+    return resp.ok;
+  } catch (e) {
+    console.error("[lead] save erro:", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
 /** Pedidos pagos (pix aprovado), mais recentes primeiro. Pra aba Pedidos. */
 export async function listOrders(): Promise<ConversationState[]> {
   const env = supabaseEnv();

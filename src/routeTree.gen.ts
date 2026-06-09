@@ -14,6 +14,8 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceName'
 import { Route as ApiPedidosRouteImport } from './routes/api/pedidos'
+import { Route as ApiLetraRouteImport } from './routes/api/letra'
+import { Route as ApiLeadRouteImport } from './routes/api/lead'
 import { Route as ApiWebhookEvolutionRouteImport } from './routes/api/webhook/evolution'
 import { Route as ApiCronFollowupsRouteImport } from './routes/api/cron/followups'
 import { Route as ApiAgentPauseRouteImport } from './routes/api/agent/pause'
@@ -43,6 +45,16 @@ const ApiPedidosRoute = ApiPedidosRouteImport.update({
   path: '/api/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLetraRoute = ApiLetraRouteImport.update({
+  id: '/api/letra',
+  path: '/api/letra',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLeadRoute = ApiLeadRouteImport.update({
+  id: '/api/lead',
+  path: '/api/lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWebhookEvolutionRoute = ApiWebhookEvolutionRouteImport.update({
   id: '/api/webhook/evolution',
   path: '/api/webhook/evolution',
@@ -63,6 +75,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
+  '/api/lead': typeof ApiLeadRoute
+  '/api/letra': typeof ApiLetraRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
@@ -73,6 +87,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
+  '/api/lead': typeof ApiLeadRoute
+  '/api/letra': typeof ApiLetraRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
@@ -84,6 +100,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/pedidos': typeof PedidosRoute
+  '/api/lead': typeof ApiLeadRoute
+  '/api/letra': typeof ApiLetraRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
@@ -96,6 +114,8 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/pedidos'
+    | '/api/lead'
+    | '/api/letra'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
@@ -106,6 +126,8 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/pedidos'
+    | '/api/lead'
+    | '/api/letra'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
@@ -116,6 +138,8 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/pedidos'
+    | '/api/lead'
+    | '/api/letra'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
@@ -127,6 +151,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
   PedidosRoute: typeof PedidosRoute
+  ApiLeadRoute: typeof ApiLeadRoute
+  ApiLetraRoute: typeof ApiLetraRoute
   ApiPedidosRoute: typeof ApiPedidosRoute
   ChatsInstanceNameRoute: typeof ChatsInstanceNameRoute
   ApiAgentPauseRoute: typeof ApiAgentPauseRoute
@@ -171,6 +197,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/letra': {
+      id: '/api/letra'
+      path: '/api/letra'
+      fullPath: '/api/letra'
+      preLoaderRoute: typeof ApiLetraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/lead': {
+      id: '/api/lead'
+      path: '/api/lead'
+      fullPath: '/api/lead'
+      preLoaderRoute: typeof ApiLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/webhook/evolution': {
       id: '/api/webhook/evolution'
       path: '/api/webhook/evolution'
@@ -199,6 +239,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
   PedidosRoute: PedidosRoute,
+  ApiLeadRoute: ApiLeadRoute,
+  ApiLetraRoute: ApiLetraRoute,
   ApiPedidosRoute: ApiPedidosRoute,
   ChatsInstanceNameRoute: ChatsInstanceNameRoute,
   ApiAgentPauseRoute: ApiAgentPauseRoute,
@@ -208,3 +250,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
