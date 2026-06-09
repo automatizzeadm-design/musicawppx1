@@ -139,9 +139,12 @@ function ChatFunnel() {
     setControl(null);
     await botSay([
       "Funciona así de fácil:",
+      "1️⃣ Nos cuentas la historia que tú quieras: lo que sientes, los momentos especiales y los detalles que hacen única a esa persona.",
+      "2️⃣ Con eso creamos la letra de tu canción, escrita 100% a partir de lo que nos contaste.",
+      "3️⃣ Si te encanta la letra, nuestros artistas graban la canción en tan solo unos minutos 🎙️",
+      "4️⃣ Y te la enviamos directo a tu correo electrónico, lista para emocionar 🎶",
       "Cada canción es única y exclusiva — nunca repetimos melodías ni letras.",
-      "Tú nos cuentas lo que quieres en la letra, eliges el estilo musical y nosotros nos encargamos de todo lo demás.",
-      "👉 Y además, tú decides si quieres solo la canción o la canción + video.",
+      "👉 Y además, tú eliges si quieres solo la canción o la canción + video.",
     ]);
     setControl({ type: "buttons", buttons: [{ label: "Continuar", onClick: pruebaSocial }] });
   }
