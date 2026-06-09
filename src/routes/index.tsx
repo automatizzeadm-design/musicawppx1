@@ -4,7 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, ListOrdered, Loader2, Music, RefreshCw, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  ListOrdered,
+  Loader2,
+  Music,
+  Power,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -39,7 +47,10 @@ function StatusRow({ label, ok }: { label: string; ok: boolean }) {
 }
 
 function Home() {
-  const [key, setKey] = useState("");
+  const [adminKey, setAdminKey] = useState("");
+  const [phone, setPhone] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["status"],
@@ -48,6 +59,44 @@ function Home() {
   });
 
   const env = data?.env;
+
+  async function setPause(paused: boolean) {
+    if (!adminKey) {
+      setResult({ ok: false, msg: "Informe a chave de acesso." });
+      return;
+    }
+    if (!phone.replace(/\D/g, "")) {
+      setResult({ ok: false, msg: "Informe o número." });
+      return;
+    }
+    setBusy(true);
+    setResult(null);
+    try {
+      const resp = await fetch(`/api/agent/pause?key=${encodeURIComponent(adminKey)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, paused }),
+      });
+      const json = (await resp.json().catch(() => ({}))) as { ok?: boolean; affected?: number; error?: string };
+      if (resp.ok && json.ok) {
+        setResult({
+          ok: true,
+          msg: paused
+            ? `Bot DESATIVADO para ${phone} (${json.affected} conversa[s]).`
+            : `Bot REATIVADO para ${phone} (${json.affected} conversa[s]).`,
+        });
+        setPhone("");
+      } else if (resp.status === 401) {
+        setResult({ ok: false, msg: "Chave de acesso inválida." });
+      } else {
+        setResult({ ok: false, msg: `Erro: ${json.error ?? resp.status}` });
+      }
+    } catch {
+      setResult({ ok: false, msg: "Falha de conexão. Tente de novo." });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -92,28 +141,71 @@ function Home() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
+              <Power className="h-5 w-5" /> Ativar / Desativar o bot por número
+            </CardTitle>
+            <CardDescription>
+              Desative pra assumir uma conversa manualmente. Reative quando quiser que o bot volte.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Input
+              type="password"
+              placeholder="Chave de acesso (CRON_SECRET)"
+              value={adminKey}
+              onChange={(e) => setAdminKey(e.target.value)}
+            />
+            <Input
+              type="tel"
+              placeholder="Número com DDD (ex: 86981058357)"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="destructive"
+                className="flex-1"
+                disabled={busy}
+                onClick={() => setPause(true)}
+              >
+                {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Desativar bot
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={busy}
+                onClick={() => setPause(false)}
+              >
+                Reativar bot
+              </Button>
+            </div>
+            {result && (
+              <p className={`text-sm ${result.ok ? "text-green-600" : "text-red-500"}`}>{result.msg}</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
               <ListOrdered className="h-5 w-5" /> Pedidos
             </CardTitle>
             <CardDescription>Veja os pedidos pagos e marque como produzidos.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form
-              className="flex gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (key) window.location.href = `/pedidos?key=${encodeURIComponent(key)}`;
+            <Button
+              disabled={!adminKey}
+              onClick={() => {
+                if (adminKey) window.location.href = `/pedidos?key=${encodeURIComponent(adminKey)}`;
               }}
             >
-              <Input
-                type="password"
-                placeholder="Chave de acesso (CRON_SECRET)"
-                value={key}
-                onChange={(e) => setKey(e.target.value)}
-              />
-              <Button type="submit" disabled={!key}>
-                Abrir Pedidos
-              </Button>
-            </form>
+              Abrir Pedidos
+            </Button>
+            {!adminKey && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Preencha a chave de acesso acima pra abrir.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
