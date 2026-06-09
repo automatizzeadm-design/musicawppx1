@@ -19,17 +19,26 @@ export const Route = createFileRoute("/api/letra")({
           nombre?: string;
           historia?: string;
           estilo?: string;
+          ajuste?: string;
+          anterior?: string;
         };
         if (!body.historia) return json({ ok: false, error: "missing_historia" }, 400);
 
         const config = getAgentConfig();
+        const ajusteBloque =
+          body.ajuste && body.anterior
+            ? `\n\nLETRA ANTERIOR (para ajustar):\n${body.anterior}\n\nINSTRUCCIÓN DEL CLIENTE: ${body.ajuste}\nReescribe la letra siguiendo esa instrucción.`
+            : body.ajuste
+              ? `\n\nINSTRUCCIÓN ADICIONAL: ${body.ajuste}`
+              : "";
         const systemPrompt =
           `Eres un compositor profesional de canciones personalizadas. Escribe SOLO la LETRA (texto) ` +
           `de una canción en español neutro latinoamericano, basada en la historia del cliente.\n` +
           `- Estilo musical: ${body.estilo ?? "balada romántica"}.\n` +
           `- Estructura: [Estrofa 1], [Estribillo], [Estrofa 2], [Estribillo final].\n` +
           `- Usa los nombres y detalles reales de la historia. Que sea emotiva y específica, sin clichés vacíos.\n` +
-          `- NUNCA copies letras de canciones existentes. No agregues explicaciones ni comentarios, solo la letra.`;
+          `- NUNCA copies letras de canciones existentes. No agregues explicaciones ni comentarios, solo la letra.` +
+          ajusteBloque;
 
         let letra = "";
         try {

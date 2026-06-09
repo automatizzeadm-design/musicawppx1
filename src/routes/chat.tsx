@@ -94,7 +94,7 @@ function ChatFunnel() {
     await botSay([
       "🎧 ¿Ya te imaginaste emocionar a esa persona especial con una canción hecha solo para ella?",
       "Una canción creada desde cero, que cuenta la historia de ustedes dos.",
-      "Aquí en Tu Música Personalizada convertimos sentimientos en música.",
+      "Aquí en CreaTuCanción convertimos sentimientos en música.",
       "Pero antes de empezar… ¿cómo te llamas?",
     ]);
     setControl({ type: "text", placeholder: "Tu nombre", onSubmit: onNombre });
@@ -127,7 +127,7 @@ function ChatFunnel() {
     setProgress(40);
     setControl(null);
     await botSay([
-      "💬 Mira lo que dicen quienes ya regalaron con el Club de la Música:",
+      "💬 Mira lo que dicen quienes ya regalaron con CreaTuCanción:",
       "Ya son cientos de canciones entregadas: cumpleaños, bodas, pedidos de perdón, declaraciones de amor y reconciliaciones.",
       "👉 ¿Quieres escuchar algunos ejemplos reales?",
     ]);
@@ -173,8 +173,13 @@ function ChatFunnel() {
     await generarLetra();
   }
 
-  async function generarLetra() {
-    await botSay(["🎵 ¡Perfecto! Ahora voy a crear la letra de tu canción… dame unos segundos ✨"]);
+  async function generarLetra(instruccion?: string) {
+    setControl(null);
+    await botSay([
+      instruccion
+        ? "✨ ¡Perfecto! Estoy ajustando tu canción… dame unos segundos"
+        : "🎵 ¡Perfecto! Ahora voy a crear la letra de tu canción… dame unos segundos ✨",
+    ]);
     setTyping(true);
     try {
       const resp = await fetch("/api/letra", {
@@ -184,6 +189,8 @@ function ChatFunnel() {
           nombre: data.current.nombre,
           historia: data.current.historia,
           estilo: data.current.estilo,
+          ajuste: instruccion ?? "",
+          anterior: data.current.letra ?? "",
         }),
       });
       const j = (await resp.json().catch(() => ({}))) as { ok?: boolean; letra?: string };
@@ -192,16 +199,44 @@ function ChatFunnel() {
         data.current.letra = j.letra;
         setMessages((m) => [...m, { id: nextId(), from: "bot", text: j.letra!, kind: "letra" }]);
         await botSay(["¡Aquí está la letra de tu canción! ¿Qué te pareció? 😊"]);
-        setControl({ type: "buttons", buttons: [{ label: "¡Me encantó! ✅", onClick: oferta }] });
+        setControl({
+          type: "buttons",
+          buttons: [
+            { label: "¡Me encantó! ✅", onClick: oferta },
+            { label: "Editar la letra ✏️", onClick: pedirAjuste },
+            { label: "Crear otra versión 🔄", onClick: otraVersion },
+          ],
+        });
       } else {
         await botSay(["Uy, tuve un problemita al crear la letra. ¿Lo intentamos de nuevo?"]);
-        setControl({ type: "buttons", buttons: [{ label: "Intentar de nuevo", onClick: generarLetra }] });
+        setControl({ type: "buttons", buttons: [{ label: "Intentar de nuevo", onClick: () => void generarLetra() }] });
       }
     } catch {
       setTyping(false);
       await botSay(["Uy, tuve un problemita de conexión. ¿Lo intentamos de nuevo?"]);
-      setControl({ type: "buttons", buttons: [{ label: "Intentar de nuevo", onClick: generarLetra }] });
+      setControl({ type: "buttons", buttons: [{ label: "Intentar de nuevo", onClick: () => void generarLetra() }] });
     }
+  }
+
+  async function pedirAjuste() {
+    pushUser("Editar la letra ✏️");
+    setControl(null);
+    await botSay(["¡Claro! Cuéntame qué te gustaría cambiar (un nombre, una frase, el tono…) y la ajusto 👇"]);
+    setControl({
+      type: "text",
+      placeholder: "¿Qué cambiamos?",
+      onSubmit: (v) => {
+        pushUser(v);
+        void generarLetra(`Aplica estos cambios pedidos por el cliente: ${v}`);
+      },
+    });
+  }
+
+  async function otraVersion() {
+    pushUser("Crear otra versión 🔄");
+    await generarLetra(
+      "Crea una versión COMPLETAMENTE diferente a la anterior, con otro enfoque, otras imágenes y otra estructura, manteniendo la misma historia y el mismo estilo.",
+    );
   }
 
   async function oferta() {
@@ -209,7 +244,8 @@ function ChatFunnel() {
     setProgress(92);
     setControl(null);
     await botSay([
-      "¡Qué bueno que te encantó! 💜 Puedes elegir entre 2 opciones:",
+      "¡Qué bueno que te gustó! 🎉 Ahora podemos avanzar con la producción de tu canción 🎶",
+      "Puedes elegir entre 2 opciones:",
       `🎵 Opción 1 – Solo la canción · ${PRECIO_SOLO} (pago único)`,
       `🎬 Opción 2 – Canción + video con fotos ⭐ (la más elegida) · ${PRECIO_VIDEO} (pago único)`,
       "🔒 Compra 100% segura | Satisfacción garantizada o te devolvemos tu dinero.",
@@ -271,15 +307,18 @@ function ChatFunnel() {
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-[100dvh] bg-[#f3efe6]">
+    <div className="flex flex-col h-[100dvh] bg-white">
       <div className="h-1.5 w-full bg-black/10">
         <div
-          className="h-full bg-gradient-to-r from-emerald-600 to-amber-500 transition-all duration-700 ease-out"
+          className="h-full bg-gradient-to-r from-[#ff7ac6] to-[#ec008c] transition-all duration-700 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
-      <header className="text-center py-3 border-b border-black/5 bg-[#f3efe6]">
-        <h1 className="text-lg font-bold text-[#3a2e22]">🎶 Tu Música Personalizada</h1>
+      <header className="flex items-center justify-center gap-1.5 py-3 border-b border-pink-100 bg-white">
+        <span className="text-2xl">🎶</span>
+        <span className="text-2xl font-extrabold tracking-tight text-gray-900">
+          CreaTu<span className="text-[#ec008c]">Canción</span>
+        </span>
       </header>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
@@ -287,7 +326,7 @@ function ChatFunnel() {
           {messages.map((m) =>
             m.from === "user" ? (
               <div key={m.id} className="flex justify-end">
-                <div className="bg-emerald-700 text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[85%] text-sm shadow">
+                <div className="bg-[#ec008c] text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[85%] text-sm shadow">
                   {m.text}
                 </div>
               </div>
@@ -295,7 +334,7 @@ function ChatFunnel() {
               <div key={m.id} className="space-y-2">
                 {AUDIO_EJEMPLOS.map((src, i) => (
                   <div key={i} className="bg-white rounded-xl px-3 py-2 shadow-sm">
-                    <p className="text-xs text-[#7a6a55] mb-1">Ejemplo {i + 1}</p>
+                    <p className="text-xs text-gray-500 mb-1">Ejemplo {i + 1}</p>
                     <audio controls preload="none" className="w-full h-9">
                       <source src={src} type="audio/mpeg" />
                     </audio>
@@ -305,7 +344,7 @@ function ChatFunnel() {
             ) : (
               <div key={m.id} className="flex justify-start">
                 <div
-                  className={`bg-white/80 text-[#3a2e22] rounded-2xl rounded-tl-sm px-4 py-2 max-w-[88%] text-sm shadow-sm ${
+                  className={`bg-pink-50 text-gray-800 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[88%] text-sm shadow-sm ${
                     m.kind === "letra" ? "whitespace-pre-wrap font-medium" : ""
                   }`}
                 >
@@ -316,11 +355,11 @@ function ChatFunnel() {
           )}
           {typing && (
             <div className="flex justify-start">
-              <div className="bg-white/80 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+              <div className="bg-pink-50 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
                 <span className="flex gap-1">
-                  <span className="w-2 h-2 bg-[#b9a98f] rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <span className="w-2 h-2 bg-[#b9a98f] rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <span className="w-2 h-2 bg-[#b9a98f] rounded-full animate-bounce" />
+                  <span className="w-2 h-2 bg-pink-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-pink-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-pink-300 rounded-full animate-bounce" />
                 </span>
               </div>
             </div>
@@ -328,7 +367,7 @@ function ChatFunnel() {
         </div>
       </div>
 
-      <div className="border-t border-black/5 bg-[#f3efe6] p-3">
+      <div className="border-t border-black/5 bg-white p-3">
         <div className="max-w-md mx-auto">
           <ControlArea control={control} draft={draft} setDraft={setDraft} />
         </div>
@@ -347,14 +386,14 @@ function ControlArea({
   setDraft: (v: string) => void;
 }) {
   if (!control) {
-    return <div className="text-center text-xs text-[#a89a82] py-2">…</div>;
+    return <div className="text-center text-xs text-gray-400 py-2">…</div>;
   }
 
   if (control.type === "link") {
     return (
       <a
         href={control.href}
-        className="block w-full text-center bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl py-3 font-semibold text-sm transition-colors"
+        className="block w-full text-center bg-[#ec008c] hover:bg-[#d1007d] text-white rounded-xl py-3 font-semibold text-sm transition-colors"
       >
         {control.label}
       </a>
@@ -368,7 +407,7 @@ function ControlArea({
           <button
             key={i}
             onClick={b.onClick}
-            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl py-3 font-semibold text-sm transition-colors"
+            className="w-full bg-[#ec008c] hover:bg-[#d1007d] text-white rounded-xl py-3 font-semibold text-sm transition-colors"
           >
             {b.label}
           </button>
@@ -384,7 +423,7 @@ function ControlArea({
         onChange={(e) => {
           if (e.target.value) control.onSubmit(e.target.value);
         }}
-        className="w-full rounded-xl border border-emerald-700/40 bg-white px-4 py-3 text-sm text-[#3a2e22] focus:outline-none focus:ring-2 focus:ring-emerald-600"
+        className="w-full rounded-xl border border-[#ec008c]/40 bg-white px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ec008c]"
       >
         <option value="" disabled>
           Selecciona…
@@ -422,12 +461,12 @@ function ControlArea({
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         autoFocus
-        className="flex-1 rounded-xl border border-emerald-700/30 bg-white px-4 py-3 text-sm text-[#3a2e22] focus:outline-none focus:ring-2 focus:ring-emerald-600"
+        className="flex-1 rounded-xl border border-[#ec008c]/30 bg-white px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ec008c]"
       />
       <button
         type="submit"
         disabled={isEmailField ? !isEmail(draft) : !draft.trim()}
-        className="bg-emerald-700 hover:bg-emerald-800 disabled:opacity-40 text-white rounded-xl px-5 font-semibold text-sm transition-colors"
+        className="bg-[#ec008c] hover:bg-[#d1007d] disabled:opacity-40 text-white rounded-xl px-5 font-semibold text-sm transition-colors"
       >
         Enviar
       </button>
