@@ -13,7 +13,7 @@ const PRECIO_VIDEO_ANTES = "$24"; // âncora (preço "de")
 const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
 const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
 const AUDIO_EJEMPLOS = ["/exemplos/es1.mp3", "/exemplos/es2.mp3", "/exemplos/es3.mp3"];
-const VIDEO_EJEMPLOS = ["/exemplos/video1.mp4"];
+const VIDEO_EMBED = "https://player.vimeo.com/video/1199934346?badge=0&autopause=0&player_id=0&app_id=58479";
 
 // Preços locais por país (valores reais do checkout da Hotmart: $9 / $12).
 const PRICES: Record<string, { solo: string; video: string }> = {
@@ -419,14 +419,16 @@ function ChatFunnel() {
                 ))}
               </div>
             ) : m.kind === "videos" ? (
-              <div key={m.id} className="space-y-2">
-                {VIDEO_EJEMPLOS.map((src, i) => (
-                  <div key={i} className="bg-white rounded-xl p-1 shadow-sm overflow-hidden">
-                    <video controls preload="none" playsInline className="w-full rounded-lg">
-                      <source src={src} type="video/mp4" />
-                    </video>
-                  </div>
-                ))}
+              <div key={m.id} className="bg-white rounded-xl p-1 shadow-sm overflow-hidden">
+                <div style={{ padding: "177.5% 0 0 0", position: "relative" }}>
+                  <iframe
+                    src={VIDEO_EMBED}
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                    title="Ejemplo CreaTuCanción"
+                    className="rounded-lg"
+                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                  />
+                </div>
               </div>
             ) : m.kind === "oferta" ? (
               <div key={m.id} className="space-y-2">
