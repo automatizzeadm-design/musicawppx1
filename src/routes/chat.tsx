@@ -13,6 +13,7 @@ const PRECIO_VIDEO_ANTES = "$24"; // âncora (preço "de")
 const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
 const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
 const AUDIO_EJEMPLOS = ["/exemplos/es1.mp3", "/exemplos/es2.mp3", "/exemplos/es3.mp3"];
+const VIDEO_EJEMPLOS = ["/exemplos/video1.mp4"];
 
 // Preços locais por país (valores reais do checkout da Hotmart: $9 / $12).
 const PRICES: Record<string, { solo: string; video: string }> = {
@@ -62,7 +63,7 @@ interface Msg {
   id: number;
   from: "bot" | "user";
   text: string;
-  kind?: "text" | "letra" | "audios" | "oferta";
+  kind?: "text" | "letra" | "audios" | "videos" | "oferta";
   offer?: OfferItem[];
 }
 
@@ -167,6 +168,9 @@ function ChatFunnel() {
     setControl(null);
     await botSay(["🎧 Aquí tienes algunos fragmentos de canciones que ya entregamos:"]);
     setMessages((m) => [...m, { id: nextId(), from: "bot", text: "", kind: "audios" }]);
+    await sleep(300);
+    await botSay(["🎬 Y mira un ejemplo en video (canción + fotos):"]);
+    setMessages((m) => [...m, { id: nextId(), from: "bot", text: "", kind: "videos" }]);
     await sleep(300);
     await botSay(["Cada una nació de una historia distinta. La tuya va a ser 100% exclusiva."]);
     setControl({ type: "buttons", buttons: [{ label: "Personalizar mi canción 🎵", onClick: pedirHistoria }] });
@@ -411,6 +415,16 @@ function ChatFunnel() {
                     <audio controls preload="none" className="w-full h-9">
                       <source src={src} type="audio/mpeg" />
                     </audio>
+                  </div>
+                ))}
+              </div>
+            ) : m.kind === "videos" ? (
+              <div key={m.id} className="space-y-2">
+                {VIDEO_EJEMPLOS.map((src, i) => (
+                  <div key={i} className="bg-white rounded-xl p-1 shadow-sm overflow-hidden">
+                    <video controls preload="none" playsInline className="w-full rounded-lg">
+                      <source src={src} type="video/mp4" />
+                    </video>
                   </div>
                 ))}
               </div>
