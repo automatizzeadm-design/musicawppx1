@@ -14,6 +14,9 @@ const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
 const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
 const AUDIO_EJEMPLOS = ["/exemplos/es1.mp3", "/exemplos/es2.mp3", "/exemplos/es3.mp3"];
 const VIDEO_EMBED = "https://player.vimeo.com/video/1199934346?badge=0&autopause=0&player_id=0&app_id=58479";
+// Mini-VSL no topo (autoplay mudo — navegador exige mudo p/ autoplay).
+const VSL_EMBED =
+  "https://player.vimeo.com/video/1200302338?badge=0&autopause=0&autoplay=1&muted=1&player_id=0&app_id=58479";
 
 // Preços locais por país (valores reais do checkout da Hotmart: $9 / $12).
 const PRICES: Record<string, { solo: string; video: string }> = {
@@ -63,7 +66,7 @@ interface Msg {
   id: number;
   from: "bot" | "user";
   text: string;
-  kind?: "text" | "letra" | "audios" | "videos" | "oferta";
+  kind?: "text" | "letra" | "audios" | "videos" | "oferta" | "vsl";
   offer?: OfferItem[];
 }
 
@@ -378,6 +381,8 @@ function ChatFunnel() {
         .then((j: { country?: string }) => setPais((j.country || "").toUpperCase()))
         .catch(() => {});
     }
+    // Mini-VSL no topo, antes do fluxo começar
+    setMessages([{ id: nextId(), from: "bot", text: "", kind: "vsl" }]);
     void apertura();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -406,6 +411,20 @@ function ChatFunnel() {
                 <div className="bg-[#ec008c] text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[85%] text-sm shadow">
                   {m.text}
                 </div>
+              </div>
+            ) : m.kind === "vsl" ? (
+              <div key={m.id} className="space-y-1">
+                <div className="rounded-xl overflow-hidden shadow">
+                  <div style={{ padding: "75% 0 0 0", position: "relative" }}>
+                    <iframe
+                      src={VSL_EMBED}
+                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                      title="CreaTuCanción"
+                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                    />
+                  </div>
+                </div>
+                <p className="text-center text-xs text-gray-500">🔊 Toca el video para activar el sonido</p>
               </div>
             ) : m.kind === "audios" ? (
               <div key={m.id} className="space-y-2">
