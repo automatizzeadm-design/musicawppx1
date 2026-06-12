@@ -99,7 +99,9 @@ function ChatFunnel() {
     letra: string;
     opcion: string;
     checkout: string;
-  }>({ nombre: "", historia: "", estilo: "", acento: "", letra: "", opcion: "", checkout: "" });
+    src: string;
+    sck: string;
+  }>({ nombre: "", historia: "", estilo: "", acento: "", letra: "", opcion: "", checkout: "", src: "", sck: "" });
 
   const nextId = () => ++idRef.current;
   const pushUser = (text: string) => setMessages((m) => [...m, { id: nextId(), from: "user", text }]);
@@ -371,8 +373,14 @@ function ChatFunnel() {
   }
 
   async function irCheckout(opcion: string, precio: string, checkout: string) {
+    // Repassa o criativo/campanha pro checkout da Hotmart (src/sck → relatório)
+    const params: string[] = [];
+    if (data.current.src) params.push(`src=${encodeURIComponent(data.current.src)}`);
+    if (data.current.sck) params.push(`sck=${encodeURIComponent(data.current.sck)}`);
+    const href = params.length ? `${checkout}&${params.join("&")}` : checkout;
+
     data.current.opcion = `${opcion} (${precio})`;
-    data.current.checkout = checkout;
+    data.current.checkout = href;
     pushUser(opcion);
     setProgress(100);
     setControl(null);
@@ -380,13 +388,17 @@ function ChatFunnel() {
       "¡Excelente elección! 🎉",
       "Toca el botón de abajo para completar tu pago de forma 100% segura y empezamos a producir tu canción de inmediato 🎶",
     ]);
-    setControl({ type: "link", label: "Completar mi pago ✅", href: checkout });
+    setControl({ type: "link", label: "Completar mi pago ✅", href });
   }
 
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    const override = new URLSearchParams(window.location.search).get("pais");
+    const sp = new URLSearchParams(window.location.search);
+    // Rastreamento de criativo/campanha (repassado pro checkout da Hotmart)
+    data.current.src = sp.get("src") || sp.get("utm_content") || sp.get("creativo") || "";
+    data.current.sck = sp.get("sck") || sp.get("utm_campaign") || sp.get("utm_source") || "";
+    const override = sp.get("pais");
     if (override) {
       setPais(override.toUpperCase());
     } else {
