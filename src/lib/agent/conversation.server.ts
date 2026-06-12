@@ -27,8 +27,8 @@ import type {
 
 function detectChoice(text: string): OptionChoice {
   const t = text.toLowerCase();
-  if (/\bop[cç][aã]o\s*2\b|\bopcao\s*2\b|musica\s*\+\s*site|m[uú]sica\s*\+\s*site|com\s*site|29[.,]?9/i.test(text)) return "musica_site";
-  if (/\bop[cç][aã]o\s*1\b|s[oó]\s*(a\s*)?m[uú]sica|so\s*musica|19[.,]?9/i.test(text)) return "musica";
+  if (/\bop[cç][aã]o\s*2\b|\bopcao\s*2\b|musica\s*\+\s*site|m[uú]sica\s*\+\s*site|com\s*site|12[.,]?0/i.test(text)) return "musica_site";
+  if (/\bop[cç][aã]o\s*1\b|s[oó]\s*(a\s*)?m[uú]sica|so\s*musica|9[.,]?0/i.test(text)) return "musica";
   return null;
 }
 
