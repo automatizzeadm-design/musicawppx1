@@ -66,7 +66,8 @@ interface Msg {
   id: number;
   from: "bot" | "user";
   text: string;
-  kind?: "text" | "letra" | "audios" | "videos" | "oferta" | "vsl";
+  kind?: "text" | "letra" | "audios" | "videos" | "oferta" | "vsl" | "images";
+  images?: string[];
   offer?: OfferItem[];
 }
 
@@ -161,6 +162,19 @@ function ChatFunnel() {
       "💬 Mira lo que dicen quienes ya regalaron con CreaTuCanción:",
       "Ya son cientos de canciones entregadas: cumpleaños, bodas, pedidos de perdón, declaraciones de amor y reconciliaciones.",
       "👉 ¿Quieres escuchar algunos ejemplos reales?",
+    ]);
+    setMessages((m) => [
+      ...m,
+      {
+        id: nextId(),
+        from: "bot",
+        text: "",
+        kind: "images",
+        images: [
+          "https://qtbkvshbmqlszncxlcuc.supabase.co/storage/v1/object/public/dsl-uploads/8me9PSiCKhZNUU9UOUbbZc7vOSa2/917a6a99-f0fd-447d-9b6b-427106986c5a.png",
+          "https://qtbkvshbmqlszncxlcuc.supabase.co/storage/v1/object/public/dsl-uploads/8me9PSiCKhZNUU9UOUbbZc7vOSa2/8d0c4b82-4b9c-4049-abc9-bdef7edb63a5.png",
+        ],
+      },
     ]);
     setControl({ type: "buttons", buttons: [{ label: "Escuchar ejemplos 🎧", onClick: ejemplos }] });
   }
@@ -448,6 +462,17 @@ function ChatFunnel() {
                     style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
                   />
                 </div>
+              </div>
+            ) : m.kind === "images" ? (
+              <div key={m.id} className="grid grid-cols-2 gap-2">
+                {m.images?.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt="Exemplo"
+                    className="w-full rounded-lg border border-black shadow-sm"
+                  />
+                ))}
               </div>
             ) : m.kind === "oferta" ? (
               <div key={m.id} className="space-y-2">
