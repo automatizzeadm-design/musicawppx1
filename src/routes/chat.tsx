@@ -8,10 +8,10 @@ export const Route = createFileRoute("/chat")({
 // ── Configuração ────────────────────────────────────────────────────────
 const PRECIO_SOLO = "$9 USD"; // solo la canción
 const PRECIO_VIDEO = "$12 USD"; // canción + video
-const PRECIO_SOLO_ANTES = "$19"; // âncora (preço "de") — ajuste/remova se quiser
+const PRECIO_SOLO_ANTES = "$19"; // âncora (preço "de")
 const PRECIO_VIDEO_ANTES = "$24"; // âncora (preço "de")
-const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1";
-const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk";
+const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1&checkoutMode=10";
+const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk&checkoutMode=10";
 const AUDIO_EJEMPLOS = ["/exemplos/es1.mp3", "/exemplos/es2.mp3", "/exemplos/es3.mp3"];
 const VIDEO_EMBED = "https://player.vimeo.com/video/1199934346?badge=0&autopause=0&player_id=0&app_id=58479";
 // Mini-VSL no topo (autoplay mudo — navegador exige mudo p/ autoplay).
