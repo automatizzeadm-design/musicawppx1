@@ -47,13 +47,13 @@ function parseValor(s: string | undefined, fallback: number): number {
 
 export function getAgentConfig(): AgentConfig {
   const business: BusinessConfig = {
-    preco_musica: process.env.PRECO_MUSICA ?? "R$ 19,90",
-    preco_musica_site: process.env.PRECO_MUSICA_SITE ?? "R$ 29,90",
+    preco_musica: process.env.PRECO_MUSICA ?? "R$ 9,00",
+    preco_musica_site: process.env.PRECO_MUSICA_SITE ?? "R$ 12,00",
     prazo_entrega: process.env.PRAZO_ENTREGA ?? "em até 2 horas",
     chave_pix: process.env.CHAVE_PIX ?? "andreyurifurtado1@gmail.com",
     dados_recebedor: process.env.DADOS_RECEBEDOR ?? "Andre Yuri Furtado",
-    preco_musica_valor: parseValor(process.env.PRECO_MUSICA, 19.9),
-    preco_musica_site_valor: parseValor(process.env.PRECO_MUSICA_SITE, 29.9),
+    preco_musica_valor: parseValor(process.env.PRECO_MUSICA, 9.0),
+    preco_musica_site_valor: parseValor(process.env.PRECO_MUSICA_SITE, 12.0),
   };
 
   const exemplosEnv = (process.env.EXEMPLOS_AUDIO_URLS ?? "")
