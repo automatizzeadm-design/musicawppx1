@@ -122,7 +122,9 @@ Registre a escolha e siga DIRETO para pagamento.
 Envie em balões separados:
 "Perfeito! Escolha sua forma de pagamento preferida 👇"
 
-"💳 Cartão ou Boleto: [link_hotmart]"
+"💳 Cartão ou Boleto:
+- Opção 1 ($9): https://pay.hotmart.com/T105298918P?off=9b8zozb1&checkoutMode=10
+- Opção 2 ($12): https://pay.hotmart.com/T105298918P?off=llc1ujvk&checkoutMode=10"
 
 "Ou se preferir Pix, aqui estão os dados:
 Chave Pix: ${chave_pix}
