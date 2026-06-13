@@ -223,6 +223,63 @@ export async function markLeadPaid(email: string): Promise<number> {
   }
 }
 
+/** Leads que NÃO compraram e ainda não receberam o e-mail de follow-up,
+ *  criados antes do cutoff (ex: 20 min atrás). Pro cron de e-mail. */
+export async function listEmailFollowupCandidates(cutoffIso: string): Promise<Record<string, unknown>[]> {
+  const env = supabaseEnv();
+  if (!env) return [];
+  try {
+    const url =
+      `${env.url}/rest/v1/leads?paid=is.false&email_followup_sent=is.false` +
+      `&created_at=lt.${encodeURIComponent(cutoffIso)}&select=id,nombre,email,estilo&order=created_at.asc&limit=50`;
+    const resp = await fetch(url, { headers: supabaseHeaders(env), signal: AbortSignal.timeout(15000) });
+    if (!resp.ok) {
+      console.error("[followup-email] busca falhou:", resp.status, await resp.text().catch(() => ""));
+      return [];
+    }
+    return (await resp.json().catch(() => [])) as Record<string, unknown>[];
+  } catch (e) {
+    console.error("[followup-email] erro:", e instanceof Error ? e.message : e);
+    return [];
+  }
+}
+
+/** Marca que o e-mail de follow-up foi enviado pra um lead (por id). */
+export async function markEmailFollowupSentById(id: string): Promise<void> {
+  const env = supabaseEnv();
+  if (!env) return;
+  try {
+    await fetch(`${env.url}/rest/v1/leads?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { ...supabaseHeaders(env), Prefer: "return=minimal" },
+      body: JSON.stringify({ email_followup_sent: true }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (e) {
+    console.error("[followup-email] mark erro:", e instanceof Error ? e.message : e);
+  }
+}
+
+/** Lista os leads recentes (pra aba interna de Follow-up). */
+export async function listLeadsRecent(): Promise<Record<string, unknown>[]> {
+  const env = supabaseEnv();
+  if (!env) return [];
+  try {
+    const url =
+      `${env.url}/rest/v1/leads?select=nombre,email,estilo,opcion,paid,email_followup_sent,created_at` +
+      `&order=created_at.desc&limit=300`;
+    const resp = await fetch(url, { headers: supabaseHeaders(env), signal: AbortSignal.timeout(15000) });
+    if (!resp.ok) {
+      console.error("[leads] lista falhou:", resp.status, await resp.text().catch(() => ""));
+      return [];
+    }
+    return (await resp.json().catch(() => [])) as Record<string, unknown>[];
+  } catch (e) {
+    console.error("[leads] erro:", e instanceof Error ? e.message : e);
+    return [];
+  }
+}
+
 /** Salva um lead do funnel web (/chat) na tabela `leads`. */
 export async function saveLead(lead: Record<string, unknown>): Promise<boolean> {
   const env = supabaseEnv();

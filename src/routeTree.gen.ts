@@ -11,17 +11,20 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as MiPedidoRouteImport } from './routes/mi-pedido'
+import { Route as FollowUpRouteImport } from './routes/follow-up'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceName'
 import { Route as ApiPedidosRouteImport } from './routes/api/pedidos'
 import { Route as ApiMiPedidoRouteImport } from './routes/api/mi-pedido'
 import { Route as ApiLetraRouteImport } from './routes/api/letra'
+import { Route as ApiLeadsRouteImport } from './routes/api/leads'
 import { Route as ApiLeadRouteImport } from './routes/api/lead'
 import { Route as ApiHotmartRouteImport } from './routes/api/hotmart'
 import { Route as ApiGeoRouteImport } from './routes/api/geo'
 import { Route as ApiWebhookEvolutionRouteImport } from './routes/api/webhook/evolution'
 import { Route as ApiCronFollowupsRouteImport } from './routes/api/cron/followups'
+import { Route as ApiCronEmailFollowupRouteImport } from './routes/api/cron/email-followup'
 import { Route as ApiAgentPauseRouteImport } from './routes/api/agent/pause'
 
 const PedidosRoute = PedidosRouteImport.update({
@@ -32,6 +35,11 @@ const PedidosRoute = PedidosRouteImport.update({
 const MiPedidoRoute = MiPedidoRouteImport.update({
   id: '/mi-pedido',
   path: '/mi-pedido',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FollowUpRoute = FollowUpRouteImport.update({
+  id: '/follow-up',
+  path: '/follow-up',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -64,6 +72,11 @@ const ApiLetraRoute = ApiLetraRouteImport.update({
   path: '/api/letra',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLeadsRoute = ApiLeadsRouteImport.update({
+  id: '/api/leads',
+  path: '/api/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLeadRoute = ApiLeadRouteImport.update({
   id: '/api/lead',
   path: '/api/lead',
@@ -89,6 +102,11 @@ const ApiCronFollowupsRoute = ApiCronFollowupsRouteImport.update({
   path: '/api/cron/followups',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronEmailFollowupRoute = ApiCronEmailFollowupRouteImport.update({
+  id: '/api/cron/email-followup',
+  path: '/api/cron/email-followup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAgentPauseRoute = ApiAgentPauseRouteImport.update({
   id: '/api/agent/pause',
   path: '/api/agent/pause',
@@ -98,32 +116,38 @@ const ApiAgentPauseRoute = ApiAgentPauseRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/follow-up': typeof FollowUpRoute
   '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
   '/api/hotmart': typeof ApiHotmartRoute
   '/api/lead': typeof ApiLeadRoute
+  '/api/leads': typeof ApiLeadsRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/mi-pedido': typeof ApiMiPedidoRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
+  '/api/cron/email-followup': typeof ApiCronEmailFollowupRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/follow-up': typeof FollowUpRoute
   '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
   '/api/hotmart': typeof ApiHotmartRoute
   '/api/lead': typeof ApiLeadRoute
+  '/api/leads': typeof ApiLeadsRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/mi-pedido': typeof ApiMiPedidoRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
+  '/api/cron/email-followup': typeof ApiCronEmailFollowupRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
@@ -131,16 +155,19 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/follow-up': typeof FollowUpRoute
   '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
   '/api/hotmart': typeof ApiHotmartRoute
   '/api/lead': typeof ApiLeadRoute
+  '/api/leads': typeof ApiLeadsRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/mi-pedido': typeof ApiMiPedidoRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
+  '/api/cron/email-followup': typeof ApiCronEmailFollowupRoute
   '/api/cron/followups': typeof ApiCronFollowupsRoute
   '/api/webhook/evolution': typeof ApiWebhookEvolutionRoute
 }
@@ -149,48 +176,57 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/chat'
+    | '/follow-up'
     | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
     | '/api/hotmart'
     | '/api/lead'
+    | '/api/leads'
     | '/api/letra'
     | '/api/mi-pedido'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
+    | '/api/cron/email-followup'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/chat'
+    | '/follow-up'
     | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
     | '/api/hotmart'
     | '/api/lead'
+    | '/api/leads'
     | '/api/letra'
     | '/api/mi-pedido'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
+    | '/api/cron/email-followup'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
   id:
     | '__root__'
     | '/'
     | '/chat'
+    | '/follow-up'
     | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
     | '/api/hotmart'
     | '/api/lead'
+    | '/api/leads'
     | '/api/letra'
     | '/api/mi-pedido'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
+    | '/api/cron/email-followup'
     | '/api/cron/followups'
     | '/api/webhook/evolution'
   fileRoutesById: FileRoutesById
@@ -198,16 +234,19 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
+  FollowUpRoute: typeof FollowUpRoute
   MiPedidoRoute: typeof MiPedidoRoute
   PedidosRoute: typeof PedidosRoute
   ApiGeoRoute: typeof ApiGeoRoute
   ApiHotmartRoute: typeof ApiHotmartRoute
   ApiLeadRoute: typeof ApiLeadRoute
+  ApiLeadsRoute: typeof ApiLeadsRoute
   ApiLetraRoute: typeof ApiLetraRoute
   ApiMiPedidoRoute: typeof ApiMiPedidoRoute
   ApiPedidosRoute: typeof ApiPedidosRoute
   ChatsInstanceNameRoute: typeof ChatsInstanceNameRoute
   ApiAgentPauseRoute: typeof ApiAgentPauseRoute
+  ApiCronEmailFollowupRoute: typeof ApiCronEmailFollowupRoute
   ApiCronFollowupsRoute: typeof ApiCronFollowupsRoute
   ApiWebhookEvolutionRoute: typeof ApiWebhookEvolutionRoute
 }
@@ -226,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/mi-pedido'
       fullPath: '/mi-pedido'
       preLoaderRoute: typeof MiPedidoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/follow-up': {
+      id: '/follow-up'
+      path: '/follow-up'
+      fullPath: '/follow-up'
+      preLoaderRoute: typeof FollowUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -270,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLetraRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/leads': {
+      id: '/api/leads'
+      path: '/api/leads'
+      fullPath: '/api/leads'
+      preLoaderRoute: typeof ApiLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/lead': {
       id: '/api/lead'
       path: '/api/lead'
@@ -305,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronFollowupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/email-followup': {
+      id: '/api/cron/email-followup'
+      path: '/api/cron/email-followup'
+      fullPath: '/api/cron/email-followup'
+      preLoaderRoute: typeof ApiCronEmailFollowupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/agent/pause': {
       id: '/api/agent/pause'
       path: '/api/agent/pause'
@@ -318,16 +378,19 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
+  FollowUpRoute: FollowUpRoute,
   MiPedidoRoute: MiPedidoRoute,
   PedidosRoute: PedidosRoute,
   ApiGeoRoute: ApiGeoRoute,
   ApiHotmartRoute: ApiHotmartRoute,
   ApiLeadRoute: ApiLeadRoute,
+  ApiLeadsRoute: ApiLeadsRoute,
   ApiLetraRoute: ApiLetraRoute,
   ApiMiPedidoRoute: ApiMiPedidoRoute,
   ApiPedidosRoute: ApiPedidosRoute,
   ChatsInstanceNameRoute: ChatsInstanceNameRoute,
   ApiAgentPauseRoute: ApiAgentPauseRoute,
+  ApiCronEmailFollowupRoute: ApiCronEmailFollowupRoute,
   ApiCronFollowupsRoute: ApiCronFollowupsRoute,
   ApiWebhookEvolutionRoute: ApiWebhookEvolutionRoute,
 }
