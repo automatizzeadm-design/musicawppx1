@@ -198,6 +198,31 @@ export async function listLeadsByEmail(email: string): Promise<Record<string, un
   }
 }
 
+/** Marca como pago o(s) lead(s) de um e-mail (chamado pelo webhook da Hotmart). */
+export async function markLeadPaid(email: string): Promise<number> {
+  const env = supabaseEnv();
+  if (!env) return 0;
+  const clean = email.trim();
+  if (!clean) return 0;
+  try {
+    const resp = await fetch(`${env.url}/rest/v1/leads?email=ilike.${encodeURIComponent(clean)}`, {
+      method: "PATCH",
+      headers: { ...supabaseHeaders(env), Prefer: "return=representation" },
+      body: JSON.stringify({ paid: true, paid_at: new Date().toISOString() }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!resp.ok) {
+      console.error("[hotmart] markLeadPaid falhou:", resp.status, await resp.text().catch(() => ""));
+      return 0;
+    }
+    const rows = (await resp.json().catch(() => [])) as unknown[];
+    return Array.isArray(rows) ? rows.length : 0;
+  } catch (e) {
+    console.error("[hotmart] markLeadPaid erro:", e instanceof Error ? e.message : e);
+    return 0;
+  }
+}
+
 /** Salva um lead do funnel web (/chat) na tabela `leads`. */
 export async function saveLead(lead: Record<string, unknown>): Promise<boolean> {
   const env = supabaseEnv();

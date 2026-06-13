@@ -101,7 +101,8 @@ function ChatFunnel() {
     checkout: string;
     src: string;
     sck: string;
-  }>({ nombre: "", historia: "", estilo: "", acento: "", letra: "", opcion: "", checkout: "", src: "", sck: "" });
+    email: string;
+  }>({ nombre: "", historia: "", estilo: "", acento: "", letra: "", opcion: "", checkout: "", src: "", sck: "", email: "" });
 
   const nextId = () => ++idRef.current;
   const pushUser = (text: string) => setMessages((m) => [...m, { id: nextId(), from: "user", text }]);
@@ -311,6 +312,7 @@ function ChatFunnel() {
   }
 
   async function onEmail(v: string) {
+    data.current.email = v.trim();
     pushUser(v);
     setProgress(94);
     setControl(null);
@@ -377,6 +379,7 @@ function ChatFunnel() {
     const params: string[] = [];
     if (data.current.src) params.push(`src=${encodeURIComponent(data.current.src)}`);
     if (data.current.sck) params.push(`sck=${encodeURIComponent(data.current.sck)}`);
+    if (data.current.email) params.push(`email=${encodeURIComponent(data.current.email)}`);
     const href = params.length ? `${checkout}&${params.join("&")}` : checkout;
 
     data.current.opcion = `${opcion} (${precio})`;

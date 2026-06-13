@@ -18,6 +18,7 @@ import { Route as ApiPedidosRouteImport } from './routes/api/pedidos'
 import { Route as ApiMiPedidoRouteImport } from './routes/api/mi-pedido'
 import { Route as ApiLetraRouteImport } from './routes/api/letra'
 import { Route as ApiLeadRouteImport } from './routes/api/lead'
+import { Route as ApiHotmartRouteImport } from './routes/api/hotmart'
 import { Route as ApiGeoRouteImport } from './routes/api/geo'
 import { Route as ApiWebhookEvolutionRouteImport } from './routes/api/webhook/evolution'
 import { Route as ApiCronFollowupsRouteImport } from './routes/api/cron/followups'
@@ -68,6 +69,11 @@ const ApiLeadRoute = ApiLeadRouteImport.update({
   path: '/api/lead',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHotmartRoute = ApiHotmartRouteImport.update({
+  id: '/api/hotmart',
+  path: '/api/hotmart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGeoRoute = ApiGeoRouteImport.update({
   id: '/api/geo',
   path: '/api/geo',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
+  '/api/hotmart': typeof ApiHotmartRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/mi-pedido': typeof ApiMiPedidoRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
+  '/api/hotmart': typeof ApiHotmartRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/mi-pedido': typeof ApiMiPedidoRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
+  '/api/hotmart': typeof ApiHotmartRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
   '/api/mi-pedido': typeof ApiMiPedidoRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
+    | '/api/hotmart'
     | '/api/lead'
     | '/api/letra'
     | '/api/mi-pedido'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
+    | '/api/hotmart'
     | '/api/lead'
     | '/api/letra'
     | '/api/mi-pedido'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
+    | '/api/hotmart'
     | '/api/lead'
     | '/api/letra'
     | '/api/mi-pedido'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   MiPedidoRoute: typeof MiPedidoRoute
   PedidosRoute: typeof PedidosRoute
   ApiGeoRoute: typeof ApiGeoRoute
+  ApiHotmartRoute: typeof ApiHotmartRoute
   ApiLeadRoute: typeof ApiLeadRoute
   ApiLetraRoute: typeof ApiLetraRoute
   ApiMiPedidoRoute: typeof ApiMiPedidoRoute
@@ -264,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLeadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/hotmart': {
+      id: '/api/hotmart'
+      path: '/api/hotmart'
+      fullPath: '/api/hotmart'
+      preLoaderRoute: typeof ApiHotmartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/geo': {
       id: '/api/geo'
       path: '/api/geo'
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   MiPedidoRoute: MiPedidoRoute,
   PedidosRoute: PedidosRoute,
   ApiGeoRoute: ApiGeoRoute,
+  ApiHotmartRoute: ApiHotmartRoute,
   ApiLeadRoute: ApiLeadRoute,
   ApiLetraRoute: ApiLetraRoute,
   ApiMiPedidoRoute: ApiMiPedidoRoute,
