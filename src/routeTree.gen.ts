@@ -10,10 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PedidosRouteImport } from './routes/pedidos'
+import { Route as MiPedidoRouteImport } from './routes/mi-pedido'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatsInstanceNameRouteImport } from './routes/chats.$instanceName'
 import { Route as ApiPedidosRouteImport } from './routes/api/pedidos'
+import { Route as ApiMiPedidoRouteImport } from './routes/api/mi-pedido'
 import { Route as ApiLetraRouteImport } from './routes/api/letra'
 import { Route as ApiLeadRouteImport } from './routes/api/lead'
 import { Route as ApiGeoRouteImport } from './routes/api/geo'
@@ -24,6 +26,11 @@ import { Route as ApiAgentPauseRouteImport } from './routes/api/agent/pause'
 const PedidosRoute = PedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MiPedidoRoute = MiPedidoRouteImport.update({
+  id: '/mi-pedido',
+  path: '/mi-pedido',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -44,6 +51,11 @@ const ChatsInstanceNameRoute = ChatsInstanceNameRouteImport.update({
 const ApiPedidosRoute = ApiPedidosRouteImport.update({
   id: '/api/pedidos',
   path: '/api/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMiPedidoRoute = ApiMiPedidoRouteImport.update({
+  id: '/api/mi-pedido',
+  path: '/api/mi-pedido',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLetraRoute = ApiLetraRouteImport.update({
@@ -80,10 +92,12 @@ const ApiAgentPauseRoute = ApiAgentPauseRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
+  '/api/mi-pedido': typeof ApiMiPedidoRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
@@ -93,10 +107,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
+  '/api/mi-pedido': typeof ApiMiPedidoRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
@@ -107,10 +123,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/mi-pedido': typeof MiPedidoRoute
   '/pedidos': typeof PedidosRoute
   '/api/geo': typeof ApiGeoRoute
   '/api/lead': typeof ApiLeadRoute
   '/api/letra': typeof ApiLetraRoute
+  '/api/mi-pedido': typeof ApiMiPedidoRoute
   '/api/pedidos': typeof ApiPedidosRoute
   '/chats/$instanceName': typeof ChatsInstanceNameRoute
   '/api/agent/pause': typeof ApiAgentPauseRoute
@@ -122,10 +140,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/chat'
+    | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
     | '/api/lead'
     | '/api/letra'
+    | '/api/mi-pedido'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
@@ -135,10 +155,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/chat'
+    | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
     | '/api/lead'
     | '/api/letra'
+    | '/api/mi-pedido'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
@@ -148,10 +170,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/chat'
+    | '/mi-pedido'
     | '/pedidos'
     | '/api/geo'
     | '/api/lead'
     | '/api/letra'
+    | '/api/mi-pedido'
     | '/api/pedidos'
     | '/chats/$instanceName'
     | '/api/agent/pause'
@@ -162,10 +186,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
+  MiPedidoRoute: typeof MiPedidoRoute
   PedidosRoute: typeof PedidosRoute
   ApiGeoRoute: typeof ApiGeoRoute
   ApiLeadRoute: typeof ApiLeadRoute
   ApiLetraRoute: typeof ApiLetraRoute
+  ApiMiPedidoRoute: typeof ApiMiPedidoRoute
   ApiPedidosRoute: typeof ApiPedidosRoute
   ChatsInstanceNameRoute: typeof ChatsInstanceNameRoute
   ApiAgentPauseRoute: typeof ApiAgentPauseRoute
@@ -180,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/pedidos'
       fullPath: '/pedidos'
       preLoaderRoute: typeof PedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mi-pedido': {
+      id: '/mi-pedido'
+      path: '/mi-pedido'
+      fullPath: '/mi-pedido'
+      preLoaderRoute: typeof MiPedidoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -208,6 +241,13 @@ declare module '@tanstack/react-router' {
       path: '/api/pedidos'
       fullPath: '/api/pedidos'
       preLoaderRoute: typeof ApiPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mi-pedido': {
+      id: '/api/mi-pedido'
+      path: '/api/mi-pedido'
+      fullPath: '/api/mi-pedido'
+      preLoaderRoute: typeof ApiMiPedidoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/letra': {
@@ -258,10 +298,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
+  MiPedidoRoute: MiPedidoRoute,
   PedidosRoute: PedidosRoute,
   ApiGeoRoute: ApiGeoRoute,
   ApiLeadRoute: ApiLeadRoute,
   ApiLetraRoute: ApiLetraRoute,
+  ApiMiPedidoRoute: ApiMiPedidoRoute,
   ApiPedidosRoute: ApiPedidosRoute,
   ChatsInstanceNameRoute: ChatsInstanceNameRoute,
   ApiAgentPauseRoute: ApiAgentPauseRoute,
@@ -271,3 +313,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

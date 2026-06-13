@@ -178,6 +178,26 @@ export async function listFollowUpCandidates(): Promise<ConversationState[]> {
   }
 }
 
+/** Busca os pedidos (leads) de um e-mail — pra área do cliente /mi-pedido. */
+export async function listLeadsByEmail(email: string): Promise<Record<string, unknown>[]> {
+  const env = supabaseEnv();
+  if (!env) return [];
+  const clean = email.trim();
+  if (!clean) return [];
+  try {
+    const url = `${env.url}/rest/v1/leads?email=ilike.${encodeURIComponent(clean)}&select=*&order=created_at.desc`;
+    const resp = await fetch(url, { headers: supabaseHeaders(env), signal: AbortSignal.timeout(10000) });
+    if (!resp.ok) {
+      console.error("[mi-pedido] busca falhou:", resp.status, await resp.text().catch(() => ""));
+      return [];
+    }
+    return (await resp.json().catch(() => [])) as Record<string, unknown>[];
+  } catch (e) {
+    console.error("[mi-pedido] erro:", e instanceof Error ? e.message : e);
+    return [];
+  }
+}
+
 /** Salva um lead do funnel web (/chat) na tabela `leads`. */
 export async function saveLead(lead: Record<string, unknown>): Promise<boolean> {
   const env = supabaseEnv();
