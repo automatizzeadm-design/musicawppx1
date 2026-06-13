@@ -552,7 +552,7 @@ function ControlArea({
     return (
       <a
         href={control.href}
-        className="block w-full text-center bg-[#ec008c] hover:bg-[#d1007d] text-white rounded-xl py-3 font-semibold text-sm transition-colors"
+        className="cta-pulse block w-full text-center bg-[#ec008c] hover:bg-[#d1007d] text-white rounded-xl py-3 font-semibold text-sm transition-colors"
       >
         {control.label}
       </a>
@@ -566,7 +566,7 @@ function ControlArea({
           <button
             key={i}
             onClick={b.onClick}
-            className="w-full bg-[#ec008c] hover:bg-[#d1007d] text-white rounded-xl py-3 font-semibold text-sm transition-colors"
+            className="cta-pulse w-full bg-[#ec008c] hover:bg-[#d1007d] text-white rounded-xl py-3 font-semibold text-sm transition-colors"
           >
             {b.label}
           </button>
