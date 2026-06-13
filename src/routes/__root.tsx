@@ -92,9 +92,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      // Logo / ícone do app
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-      { rel: "apple-touch-icon", href: "/favicon.svg" },
+      // Logo / ícone do app (logo oficial)
+      { rel: "icon", href: "/icon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       // Acelera o carregamento dos vídeos do Vimeo
       { rel: "preconnect", href: "https://player.vimeo.com" },
