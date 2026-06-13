@@ -25,6 +25,8 @@ function stepIndex(status: string): number {
 }
 
 const PINK = "#ec008c";
+// Trocar pelo link de checkout de $5 da Hotmart quando tiver (upsell 2ª canção)
+const OTRA_CANCION_URL = "/chat?src=upsell-mipedido";
 
 function Logo() {
   return (
@@ -165,13 +167,23 @@ function MiPedido() {
                 <div>
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-3">Estado de tu canción</p>
                   <Timeline status={o.status} />
-                  <p className="text-center text-sm mt-3" style={{ color: PINK }}>
-                    {stepIndex(o.status) >= 3
-                      ? "¡Tu canción ya fue entregada! 🎉"
-                      : stepIndex(o.status) === 2
-                        ? "¡Tu canción está lista! En breve la recibirás 🎶"
-                        : "Nuestros artistas están grabando tu canción 🎙️"}
-                  </p>
+                  {stepIndex(o.status) >= 3 ? (
+                    <p className="text-center text-sm mt-3" style={{ color: PINK }}>
+                      ¡Tu canción ya fue entregada! 🎉
+                    </p>
+                  ) : stepIndex(o.status) === 2 ? (
+                    <p className="text-center text-sm mt-3" style={{ color: PINK }}>
+                      ¡Tu canción está lista! En breve la recibirás 🎶
+                    </p>
+                  ) : (
+                    <p className="flex items-center justify-center gap-2 text-sm mt-3" style={{ color: PINK }}>
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                      </span>
+                      Nuestros artistas están grabando tu canción 🎙️
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -202,20 +214,26 @@ function MiPedido() {
 
             {/* UPSELL */}
             <div
-              className="rounded-2xl p-6 text-white text-center shadow"
+              className="relative rounded-3xl p-7 text-white text-center shadow-lg overflow-hidden"
               style={{ background: `linear-gradient(135deg, ${PINK}, #ff5fb0)` }}
             >
-              <p className="text-2xl mb-1">🎁</p>
-              <h3 className="font-bold text-lg">Sorpréndelos otra vez</h3>
-              <p className="text-sm text-white/90 mt-1 mb-4">
-                ¿Conoces a alguien más que merece su propia canción? Crea otra ahora con un precio especial.
-              </p>
+              <span className="absolute top-3 right-3 bg-white/20 backdrop-blur text-[10px] font-extrabold tracking-wide px-2.5 py-1 rounded-full">
+                OFERTA EXCLUSIVA
+              </span>
+              <p className="text-3xl mb-1">🎁</p>
+              <h3 className="font-extrabold text-xl">Sorpréndelos otra vez</h3>
+              <p className="text-sm text-white/90 mt-1">¿Conoces a alguien más que merece su propia canción?</p>
+              <div className="mt-4 mb-1 flex items-end justify-center gap-2">
+                <span className="text-base line-through text-white/60">$9</span>
+                <span className="text-5xl font-extrabold leading-none">$5</span>
+              </div>
+              <p className="text-xs text-white/80 mb-5">precio exclusivo solo para ti 💜</p>
               <a
-                href="/chat?src=upsell-mipedido"
-                className="inline-block bg-white rounded-xl px-5 py-3 font-bold text-sm"
+                href={OTRA_CANCION_URL}
+                className="cta-pulse inline-block bg-white rounded-2xl px-7 py-3.5 font-extrabold text-base shadow"
                 style={{ color: PINK }}
               >
-                Crear otra canción 🎵
+                Crear otra canción por $5 🎵
               </a>
             </div>
 
