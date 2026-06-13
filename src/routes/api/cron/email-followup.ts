@@ -13,6 +13,7 @@ import { promoFollowupHtml, sendEmail } from "@/lib/email.server";
 // FOLLOWUP_MIN minutos. Marca email_followup_sent pra não repetir.
 
 const FOLLOWUP_MIN = 20;
+const DEFAULT_PROMO_URL = "https://pay.hotmart.com/T105298918P?off=rjmudj00&src=email-followup";
 
 function json(data: unknown, status: number): Response {
   return new Response(JSON.stringify(data), {
@@ -29,14 +30,14 @@ export const Route = createFileRoute("/api/cron/email-followup")({
         const key = new URL(request.url).searchParams.get("key") ?? "";
         if (!secret || key !== secret) return json({ ok: false, error: "unauthorized" }, 401);
 
-        const promoUrl = process.env.PROMO_CHECKOUT_URL ?? "";
+        const promoUrl = process.env.PROMO_CHECKOUT_URL || DEFAULT_PROMO_URL;
         const hasResend = Boolean(process.env.RESEND_API_KEY);
-        if (!isSupabaseConfigured() || !hasResend || !promoUrl) {
+        if (!isSupabaseConfigured() || !hasResend) {
           return json(
             {
               ok: false,
               error: "nao_configurado",
-              needs: { supabase: isSupabaseConfigured(), resend: hasResend, promo_url: Boolean(promoUrl) },
+              needs: { supabase: isSupabaseConfigured(), resend: hasResend, promo_url: true },
             },
             200,
           );

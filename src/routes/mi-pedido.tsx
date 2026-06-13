@@ -25,8 +25,8 @@ function stepIndex(status: string): number {
 }
 
 const PINK = "#ec008c";
-// Trocar pelo link de checkout de $5 da Hotmart quando tiver (upsell 2ª canção)
-const OTRA_CANCION_URL = "/chat?src=upsell-mipedido";
+// Checkout de $5 da Hotmart (upsell 2ª canção) — com src pra rastrear na Hotmart
+const OTRA_CANCION_URL = "https://pay.hotmart.com/T105298918P?off=rjmudj00&src=upsell-mipedido";
 
 function Logo() {
   return (
