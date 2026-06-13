@@ -16,7 +16,7 @@ const AUDIO_EJEMPLOS = ["/exemplos/es1.mp3", "/exemplos/es2.mp3", "/exemplos/es3
 const VIDEO_EMBED = "https://player.vimeo.com/video/1199934346?badge=0&autopause=0&player_id=0&app_id=58479";
 // Mini-VSL no topo (autoplay mudo — navegador exige mudo p/ autoplay).
 const VSL_EMBED =
-  "https://player.vimeo.com/video/1200302338?badge=0&autopause=0&autoplay=1&muted=1&player_id=0&app_id=58479";
+  "https://player.vimeo.com/video/1200302338?badge=0&autopause=0&autoplay=1&muted=1&dnt=1&player_id=0&app_id=58479";
 
 // Preços locais por país (valores reais do checkout da Hotmart: $9 / $12).
 const PRICES: Record<string, { solo: string; video: string }> = {
@@ -439,9 +439,9 @@ function ChatFunnel() {
                 </div>
               </div>
             ) : m.kind === "vsl" ? (
-              <div key={m.id} className="space-y-1">
-                <div className="rounded-xl overflow-hidden shadow">
-                  <div style={{ padding: "75% 0 0 0", position: "relative" }}>
+              <div key={m.id} className="flex flex-col items-start gap-1">
+                <div className="w-[78%] max-w-[300px] rounded-2xl rounded-tl-sm overflow-hidden shadow-sm bg-black">
+                  <div style={{ padding: "177.78% 0 0 0", position: "relative" }}>
                     <iframe
                       src={VSL_EMBED}
                       allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
@@ -450,7 +450,7 @@ function ChatFunnel() {
                     />
                   </div>
                 </div>
-                <p className="text-center text-xs text-gray-500">🔊 Toca el video para activar el sonido</p>
+                <p className="text-xs text-gray-500 pl-1">🔊 Toca el video para activar el sonido</p>
               </div>
             ) : m.kind === "audios" ? (
               <div key={m.id} className="space-y-2">
@@ -468,6 +468,7 @@ function ChatFunnel() {
                 <div style={{ padding: "177.5% 0 0 0", position: "relative" }}>
                   <iframe
                     src={VIDEO_EMBED}
+                    loading="lazy"
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
                     title="Ejemplo CreaTuCanción"
                     className="rounded-lg"

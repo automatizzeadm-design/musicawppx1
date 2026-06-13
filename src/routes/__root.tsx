@@ -95,6 +95,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      // Acelera o carregamento dos vídeos do Vimeo
+      { rel: "preconnect", href: "https://player.vimeo.com" },
+      { rel: "preconnect", href: "https://i.vimeocdn.com" },
+      { rel: "preconnect", href: "https://f.vimeocdn.com" },
+      { rel: "dns-prefetch", href: "https://player.vimeo.com" },
     ],
   }),
   shellComponent: RootShell,
