@@ -129,7 +129,7 @@ function ChatFunnel() {
       "Aquí en CreaTuCanción convertimos sentimientos en música.",
       "Pero antes de empezar… ¿cómo te llamas?",
     ]);
-    setControl({ type: "text", placeholder: "Tu nombre", onSubmit: onNombre });
+    setControl({ type: "text", placeholder: "Haz clic aquí para escribir tu nombre", onSubmit: onNombre });
   }
 
   async function onNombre(v: string) {
@@ -204,7 +204,7 @@ function ChatFunnel() {
       "¡Vamos a crear la tuya! Escríbeme lo que quieres que vaya en la letra, por ejemplo:",
       "El nombre de la persona, cuánto tiempo llevan juntos, una historia que marcó sus vidas… 👇",
     ]);
-    setControl({ type: "text", placeholder: "Cuéntame su historia…", onSubmit: onHistoria });
+    setControl({ type: "text", placeholder: "Haz clic aquí para escribir su historia", onSubmit: onHistoria });
   }
 
   async function onHistoria(v: string) {
@@ -285,7 +285,7 @@ function ChatFunnel() {
     await botSay(["¡Claro! Cuéntame qué te gustaría cambiar (un nombre, una frase, el tono…) y la ajusto 👇"]);
     setControl({
       type: "text",
-      placeholder: "¿Qué cambiamos?",
+      placeholder: "Haz clic aquí para escribir los cambios",
       onSubmit: (v) => {
         pushUser(v);
         void generarLetra(`Aplica estos cambios pedidos por el cliente: ${v}`);
@@ -619,7 +619,7 @@ function ControlArea({
       <input
         type={isEmailField ? "email" : "text"}
         inputMode={isEmailField ? "email" : "text"}
-        placeholder={isEmailField ? "tucorreo@ejemplo.com" : control.type === "text" ? control.placeholder : ""}
+        placeholder={isEmailField ? "Haz clic aquí para escribir tu correo" : control.type === "text" ? control.placeholder : ""}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         autoFocus
