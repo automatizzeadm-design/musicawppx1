@@ -410,8 +410,9 @@ function ChatFunnel() {
         .then((j: { country?: string }) => setPais((j.country || "").toUpperCase()))
         .catch(() => {});
     }
-    // Mini-VSL no topo, antes do fluxo começar
-    setMessages([{ id: nextId(), from: "bot", text: "", kind: "vsl" }]);
+    // Mini-VSL no topo, antes do fluxo começar (DESATIVADA p/ teste — reativar
+    // descomentando a linha abaixo)
+    // setMessages([{ id: nextId(), from: "bot", text: "", kind: "vsl" }]);
     void apertura();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
