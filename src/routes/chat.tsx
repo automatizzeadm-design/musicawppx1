@@ -6,11 +6,11 @@ export const Route = createFileRoute("/chat")({
 });
 
 // ── Configuração ────────────────────────────────────────────────────────
-const PRECIO_SOLO = "$9 USD"; // solo la canción
+const PRECIO_SOLO = "$6 USD"; // solo la canción
 const PRECIO_VIDEO = "$12 USD"; // canción + video
 const PRECIO_SOLO_ANTES = "$19"; // âncora (preço "de")
 const PRECIO_VIDEO_ANTES = "$24"; // âncora (preço "de")
-const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=9b8zozb1&checkoutMode=10";
+const HOTMART_SOLO = "https://pay.hotmart.com/T105298918P?off=7q2gi7tf&checkoutMode=10";
 const HOTMART_VIDEO = "https://pay.hotmart.com/T105298918P?off=llc1ujvk&checkoutMode=10";
 const AUDIO_EJEMPLOS = ["/exemplos/es1.mp3", "/exemplos/es2.mp3", "/exemplos/es3.mp3"];
 const VIDEO_EMBED = "https://player.vimeo.com/video/1199934346?badge=0&autopause=0&player_id=0&app_id=58479";
@@ -20,12 +20,12 @@ const VSL_EMBED =
 
 // Preços locais por país (valores reais do checkout da Hotmart: $9 / $12).
 const PRICES: Record<string, { solo: string; video: string }> = {
-  MX: { solo: "MX$ 167,00", video: "MX$ 257,52" },
-  CO: { solo: "COP $34.134", video: "COP $45.510" },
-  AR: { solo: "ARS $14.974,00", video: "ARS $19.967,00" },
-  PE: { solo: "S/ 34,00", video: "S/ 44,00" },
-  CL: { solo: "CLP $10.403", video: "CLP $13.872" },
-  ES: { solo: "€ 9,36", video: "€ 12,48" },
+  MX: { solo: "MX$ 111,00", video: "MX$ 257,52" },
+  CO: { solo: "COP $22.756", video: "COP $45.510" },
+  AR: { solo: "ARS $9.983,00", video: "ARS $19.967,00" },
+  PE: { solo: "S/ 22,67", video: "S/ 44,00" },
+  CL: { solo: "CLP $6.935", video: "CLP $13.872" },
+  ES: { solo: "€ 6,24", video: "€ 12,48" },
 };
 
 const ACENTOS = ["Neutro latinoamericano", "México", "Colombia", "Argentina", "Perú", "Chile", "España"];
