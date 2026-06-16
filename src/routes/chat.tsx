@@ -389,9 +389,12 @@ function ChatFunnel() {
     setControl(null);
     await botSay([
       "¡Excelente elección! 🎉",
-      "Toca el botón de abajo para completar tu pago de forma 100% segura y empezamos a producir tu canción de inmediato 🎶",
+      "Te estoy llevando al pago seguro… 🔒",
     ]);
-    setControl({ type: "link", label: "Completar mi pago ✅", href });
+    // Botão de fallback (caso o redirect seja bloqueado) + redirect automático
+    setControl({ type: "link", label: "Ir al pago ahora ✅", href });
+    await sleep(1200);
+    if (typeof window !== "undefined") window.location.href = href;
   }
 
   useEffect(() => {

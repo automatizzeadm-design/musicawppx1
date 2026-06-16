@@ -108,7 +108,7 @@ function MiPedido() {
           <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-6 max-w-md mx-auto">
             <h1 className="text-xl font-bold text-gray-900 text-center">Sigue tu canción 🎵</h1>
             <p className="text-sm text-gray-500 text-center mt-1 mb-5">
-              Ingresa el correo que usaste en tu compra para ver el estado de tu pedido.
+              Ingresa el correo que usaste en tu compra para seguir la producción de tu canción.
             </p>
             <form onSubmit={buscar} className="space-y-3">
               <input
